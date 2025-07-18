@@ -8,7 +8,7 @@ import { authenticateToken } from './auth.js';
 const router = Router();
 
 // Ensure uploads directory exists
-const uploadsDir = 'uploads';
+const uploadsDir = process.env.UPLOAD_PATH || 'uploads';
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
@@ -35,7 +35,9 @@ const fileFilter = (req: any, file: any, cb: any) => {
     'application/pdf',
     'text/plain',
     'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/zip',
+    'application/x-zip-compressed'
   ];
 
   if (allowedTypes.includes(file.mimetype)) {
