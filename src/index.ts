@@ -23,7 +23,7 @@ if (process.env.NODE_ENV === 'production') {
 
 // CORS configuration
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: process.env.FRONTEND_URL || '*', // Allow all origins in development
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -43,6 +43,23 @@ app.use(limiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Root endpoint
+app.get('/', (req, res) => {
+  res.status(200).json({ 
+    message: 'Moe Command Console Backend API',
+    version: '1.0.0',
+    status: 'running',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    endpoints: {
+      health: '/health',
+      auth: '/api/auth',
+      upload: '/api/upload',
+      api: '/api'
+    }
+  });
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ 
@@ -60,7 +77,13 @@ app.use('/api', apiRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
-  res.status(404).json({ error: 'Route not found' });
+  console.log(`404 - Route not found: ${req.method} ${req.originalUrl}`);
+  res.status(404).json({ 
+    error: 'Route not found',
+    method: req.method,
+    url: req.originalUrl,
+    availableEndpoints: ['/', '/health', '/api/auth', '/api/upload', '/api']
+  });
 });
 
 // Global error handler
