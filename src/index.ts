@@ -7,6 +7,7 @@ import compression from 'compression';
 import { authRoutes } from './routes/auth.js';
 import { uploadRoutes } from './routes/upload.js';
 import { apiRoutes } from './routes/api.js';
+import { specializedRoutes } from './routes/specialized.js';
 
 dotenv.config();
 
@@ -73,6 +74,7 @@ app.get('/health', (req, res) => {
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/specialized', specializedRoutes);
 app.use('/api', apiRoutes);
 
 // 404 handler
