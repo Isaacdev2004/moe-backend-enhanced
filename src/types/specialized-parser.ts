@@ -157,7 +157,7 @@ export interface ParseStatistics {
 }
 
 export interface ParseError {
-  type: 'parsing' | 'validation' | 'structure' | 'logic';
+  type: 'parsing' | 'validation' | 'extraction' | 'structure' | 'logic';
   message: string;
   severity: 'error' | 'warning' | 'info';
   line_number?: number;

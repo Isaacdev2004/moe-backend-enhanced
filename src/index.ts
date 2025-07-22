@@ -7,7 +7,7 @@ import compression from 'compression';
 import { authRoutes } from './routes/auth.js';
 import { uploadRoutes } from './routes/upload.js';
 import { apiRoutes } from './routes/api.js';
-import { specializedRoutes } from './routes/specialized.js';
+import { specializedRoutes } from './routes/specialized-simple.js';
 
 dotenv.config();
 

@@ -41,7 +41,7 @@ export class TextParser extends BaseParser {
       
       for (const encoding of encodings) {
         try {
-          const text = file.toString(encoding);
+          const text = file.toString(encoding as BufferEncoding);
           if (text && text.length > 0) {
             return this.sanitizeText(text);
           }
