@@ -25,7 +25,7 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req: any, file: any, cb: any) => {
-  const allowedExtensions = ['.cab', '.cabx', '.mzb', '.xml'];
+  const allowedExtensions = ['.moz', '.dat', '.des', '.xml'];
   const fileExtension = path.extname(file.originalname).toLowerCase();
 
   if (allowedExtensions.includes(fileExtension)) {
@@ -53,9 +53,9 @@ router.get('/test', (req: Request, res: Response) => {
       status: 'ready',
       timestamp: new Date().toISOString(),
       supported_types: [
-        'CAB (.cab)',
-        'CABX (.cabx)', 
-        'MZB (.mzb)',
+        'MOZ (.moz)',
+        'DAT (.dat)', 
+        'DES (.des)',
         'XML (.xml)'
       ]
     });
@@ -186,30 +186,45 @@ function extractParts(content: string, fileType: string): any[] {
         });
       });
     }
-  } else if (fileType === 'cab' || fileType === 'cabx') {
-    // Simple CAB parsing
-    const cabMatches = content.match(/CAB_[A-Z_]+/g);
-    if (cabMatches) {
-      cabMatches.forEach((match, index) => {
+  } else if (fileType === 'moz') {
+    // Simple MOZ parsing
+    const mozMatches = content.match(/MOZ_[A-Z_]+/g);
+    if (mozMatches) {
+      mozMatches.forEach((match, index) => {
         parts.push({
-          id: `cab_${index}`,
+          id: `moz_${index}`,
           name: match,
-          type: 'cab_component',
+          type: 'moz_component',
           parameters: [],
           constraints: [],
           status: 'valid'
         });
       });
     }
-  } else if (fileType === 'mzb') {
-    // Simple MZB parsing
-    const mzbMatches = content.match(/MZB_[A-Z_]+/g);
-    if (mzbMatches) {
-      mzbMatches.forEach((match, index) => {
+  } else if (fileType === 'dat') {
+    // Simple DAT parsing
+    const datMatches = content.match(/DAT_[A-Z_]+/g);
+    if (datMatches) {
+      datMatches.forEach((match, index) => {
         parts.push({
-          id: `mzb_${index}`,
+          id: `dat_${index}`,
           name: match,
-          type: 'mzb_component',
+          type: 'dat_component',
+          parameters: [],
+          constraints: [],
+          status: 'valid'
+        });
+      });
+    }
+  } else if (fileType === 'des') {
+    // Simple DES parsing
+    const desMatches = content.match(/DES_[A-Z_]+/g);
+    if (desMatches) {
+      desMatches.forEach((match, index) => {
+        parts.push({
+          id: `des_${index}`,
+          name: match,
+          type: 'des_component',
           parameters: [],
           constraints: [],
           status: 'valid'
@@ -241,7 +256,7 @@ function extractParameters(content: string, fileType: string): any[] {
       });
     }
   } else {
-    // Simple key-value extraction for CAB/CABX/MZB
+    // Simple key-value extraction for MOZ/DAT/DES
     const lines = content.split('\n');
     lines.forEach((line, index) => {
       if (line.includes('=')) {
@@ -281,7 +296,7 @@ function extractConstraints(content: string, fileType: string): any[] {
       });
     }
   } else {
-    // Simple constraint extraction for CAB/CABX/MZB
+    // Simple constraint extraction for MOZ/DAT/DES
     const lines = content.split('\n');
     lines.forEach((line, index) => {
       if (line.toUpperCase().includes('CONSTRAINT')) {

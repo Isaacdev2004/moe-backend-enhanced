@@ -80,9 +80,9 @@ app.get('/api/specialized/test', (req, res) => {
     status: 'ready',
     timestamp: new Date().toISOString(),
     supported_types: [
-      'CAB (.cab)',
-      'CABX (.cabx)', 
-      'MZB (.mzb)',
+      'MOZ (.moz)',
+      'DAT (.dat)', 
+      'DES (.des)',
       'XML (.xml)'
     ]
   });
@@ -96,19 +96,19 @@ app.get('/api/specialized/supported-types', (req, res) => {
       description: 'XML files with parts, parameters, and constraints'
     },
     {
-      type: 'cab',
-      extensions: ['.cab'],
-      description: 'CAB component files with parameters and constraints'
+      type: 'moz',
+      extensions: ['.moz'],
+      description: 'Mozaik project files with components and settings'
     },
     {
-      type: 'cabx',
-      extensions: ['.cabx'],
-      description: 'Extended CAB files with advanced features'
+      type: 'dat',
+      extensions: ['.dat'],
+      description: 'Mozaik data files with parameters and values'
     },
     {
-      type: 'mzb',
-      extensions: ['.mzb'],
-      description: 'Mathematical model files with variables and equations'
+      type: 'des',
+      extensions: ['.des'],
+      description: 'Mozaik design files with layout and configuration'
     }
   ];
 
