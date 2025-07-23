@@ -72,6 +72,52 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Direct specialized routes (fallback)
+app.get('/api/specialized/test', (req, res) => {
+  console.log('Direct specialized test endpoint called');
+  res.json({
+    message: 'Specialized parser is working!',
+    status: 'ready',
+    timestamp: new Date().toISOString(),
+    supported_types: [
+      'CAB (.cab)',
+      'CABX (.cabx)', 
+      'MZB (.mzb)',
+      'XML (.xml)'
+    ]
+  });
+});
+
+app.get('/api/specialized/supported-types', (req, res) => {
+  const supportedTypes = [
+    {
+      type: 'xml',
+      extensions: ['.xml'],
+      description: 'XML files with parts, parameters, and constraints'
+    },
+    {
+      type: 'cab',
+      extensions: ['.cab'],
+      description: 'CAB component files with parameters and constraints'
+    },
+    {
+      type: 'cabx',
+      extensions: ['.cabx'],
+      description: 'Extended CAB files with advanced features'
+    },
+    {
+      type: 'mzb',
+      extensions: ['.mzb'],
+      description: 'Mathematical model files with variables and equations'
+    }
+  ];
+
+  res.json({
+    message: 'Supported file types retrieved successfully',
+    supported_types: supportedTypes
+  });
+});
+
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
@@ -114,4 +160,7 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`Health check: http://localhost:${PORT}/health`);
-}); 
+  console.log('Specialized routes loaded directly in index.ts');
+});
+
+export default app; 
