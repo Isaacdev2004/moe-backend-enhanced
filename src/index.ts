@@ -56,6 +56,7 @@ app.get('/', (req, res) => {
       health: '/health',
       auth: '/api/auth',
       upload: '/api/upload',
+      specialized: '/api/specialized',
       api: '/api'
     }
   });
@@ -84,7 +85,7 @@ app.use('*', (req, res) => {
     error: 'Route not found',
     method: req.method,
     url: req.originalUrl,
-    availableEndpoints: ['/', '/health', '/api/auth', '/api/upload', '/api']
+    availableEndpoints: ['/', '/health', '/api/auth', '/api/upload', '/api/specialized', '/api']
   });
 });
 
