@@ -8,27 +8,21 @@ import { authRoutes } from './routes/auth.js';
 import { uploadRoutes } from './routes/upload.js';
 import { apiRoutes } from './routes/api.js';
 import { specializedRoutes } from './routes/specialized.js';
-<<<<<<< HEAD
 import { searchRoutes } from './routes/search.js';
 import { analyticsRoutes } from './routes/analytics.js';
 import { chatRoutes } from './routes/chat.js';
 import { knowledgeRoutes } from './routes/knowledge.js';
 import { DatabaseService } from './services/DatabaseService.js';
 import { ContentIngestionService } from './services/ContentIngestionService.js';
-=======
->>>>>>> d346b9dd437090be178afc69cb9687aaaaf0b11c
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-<<<<<<< HEAD
 // Initialize database connection
 const dbService = DatabaseService.getInstance();
 
-=======
->>>>>>> d346b9dd437090be178afc69cb9687aaaaf0b11c
 // Security middleware
 app.use(helmet());
 
@@ -77,7 +71,6 @@ app.get('/', (req, res) => {
   });
 });
 
-<<<<<<< HEAD
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
@@ -107,16 +100,6 @@ app.get('/health', async (req, res) => {
       database: { status: 'error', details: String(error) }
     });
   }
-=======
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'OK', 
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development',
-    uptime: process.uptime()
-  });
->>>>>>> d346b9dd437090be178afc69cb9687aaaaf0b11c
 });
 
 // Direct specialized routes (fallback)
@@ -165,15 +148,6 @@ app.get('/api/specialized/supported-types', (req, res) => {
   });
 });
 
-<<<<<<< HEAD
-=======
-// API routes
-app.use('/api/auth', authRoutes);
-app.use('/api/upload', uploadRoutes);
-app.use('/api/specialized', specializedRoutes);
-app.use('/api', apiRoutes);
-
->>>>>>> d346b9dd437090be178afc69cb9687aaaaf0b11c
 // 404 handler
 app.use('*', (req, res) => {
   console.log(`404 - Route not found: ${req.method} ${req.originalUrl}`);
@@ -206,7 +180,6 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   });
 });
 
-<<<<<<< HEAD
 // Start server with database and knowledge base initialization
 async function startServer() {
   try {
@@ -269,13 +242,4 @@ process.on('SIGTERM', async () => {
 
 startServer();
 
-=======
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`Health check: http://localhost:${PORT}/health`);
-  console.log('Specialized routes loaded directly in index.ts');
-});
-
->>>>>>> d346b9dd437090be178afc69cb9687aaaaf0b11c
 export default app; 
