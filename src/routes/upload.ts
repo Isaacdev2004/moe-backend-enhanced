@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
+<<<<<<< HEAD
 import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
@@ -14,6 +15,14 @@ import { RAGPipelineService } from '../services/RAGPipelineService.js';
 const router = Router();
 const vectorDB = new VectorDBService();
 const ragPipeline = new RAGPipelineService();
+=======
+import path from 'path';
+import fs from 'fs';
+import { v4 as uuidv4 } from 'uuid';
+import { authenticateToken } from './auth.js';
+
+const router = Router();
+>>>>>>> d346b9dd437090be178afc69cb9687aaaaf0b11c
 
 // Ensure uploads directory exists
 const uploadsDir = process.env.UPLOAD_PATH || 'uploads';
@@ -75,13 +84,19 @@ const cleanupFile = (filePath: string) => {
   }
 };
 
+<<<<<<< HEAD
 // Upload single file endpoint - enhanced with vector storage
 router.post('/single', authenticateToken, upload.single('file'), async (req: AuthenticatedRequest, res: Response) => {
+=======
+// Single file upload
+router.post('/single', authenticateToken, upload.single('file'), (req: any, res: Response) => {
+>>>>>>> d346b9dd437090be178afc69cb9687aaaaf0b11c
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
+<<<<<<< HEAD
     const userId = req.user!.userId;
     const file = req.file;
     
@@ -232,6 +247,30 @@ router.post('/single', authenticateToken, upload.single('file'), async (req: Aut
       error: 'Upload failed',
       message: 'An error occurred during file upload'
     });
+=======
+    const fileInfo = {
+      id: uuidv4(),
+      originalName: req.file.originalname,
+      filename: req.file.filename,
+      mimetype: req.file.mimetype,
+      size: req.file.size,
+      path: req.file.path,
+      uploadedBy: req.user?.userId,
+      uploadedAt: new Date().toISOString()
+    };
+
+    res.status(201).json({
+      message: 'File uploaded successfully',
+      file: fileInfo
+    });
+  } catch (error) {
+    // Clean up file if upload fails
+    if (req.file) {
+      cleanupFile(req.file.path);
+    }
+    console.error('Upload error:', error);
+    res.status(500).json({ error: 'Upload failed' });
+>>>>>>> d346b9dd437090be178afc69cb9687aaaaf0b11c
   }
 });
 

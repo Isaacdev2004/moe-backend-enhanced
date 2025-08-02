@@ -4,6 +4,7 @@ import { authenticateToken } from './auth.js';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import path from 'path';
+<<<<<<< HEAD
 import { VectorDBService } from '../services/VectorDBService.js';
 import { DocumentVector } from '../types/vector-db.js';
 import { RAGPipelineService } from '../services/RAGPipelineService.js';
@@ -11,6 +12,10 @@ import { RAGPipelineService } from '../services/RAGPipelineService.js';
 const router = Router();
 const vectorDB = new VectorDBService();
 const ragPipeline = new RAGPipelineService();
+=======
+
+const router = Router();
+>>>>>>> d346b9dd437090be178afc69cb9687aaaaf0b11c
 
 console.log('Specialized routes module loaded successfully');
 
@@ -70,6 +75,7 @@ router.get('/test', (req: Request, res: Response) => {
   }
 });
 
+<<<<<<< HEAD
 // Upload and parse specialized files - enhanced with vector storage
 router.post('/upload', authenticateToken, upload.single('file'), async (req: any, res: Response) => {
   let uploadedFilePath: string | null = null;
@@ -97,6 +103,25 @@ router.post('/upload', authenticateToken, upload.single('file'), async (req: any
     const parts = extractParts(fileBuffer.toString('utf8'), fileType);
     const parameters = extractParameters(fileBuffer.toString('utf8'), fileType);
     const constraints = extractConstraints(fileBuffer.toString('utf8'), fileType);
+=======
+// Upload and parse specialized file (simplified version)
+router.post('/upload', authenticateToken, upload.single('file'), async (req: any, res: Response) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    console.log(`Processing file: ${req.file.originalname}, size: ${req.file.size} bytes`);
+
+    const fileBuffer = fs.readFileSync(req.file.path);
+    const content = fileBuffer.toString('utf8');
+    
+    // Simple parsing logic
+    const fileType = path.extname(req.file.originalname).toLowerCase().substring(1);
+    const parts = extractParts(content, fileType);
+    const parameters = extractParameters(content, fileType);
+    const constraints = extractConstraints(content, fileType);
+>>>>>>> d346b9dd437090be178afc69cb9687aaaaf0b11c
     const brokenLogic = detectBrokenLogic(parts, parameters, constraints);
 
     const parseResult = {
@@ -105,6 +130,7 @@ router.post('/upload', authenticateToken, upload.single('file'), async (req: any
       parameters: parameters,
       constraints: constraints,
       broken_logic: brokenLogic,
+<<<<<<< HEAD
       version_metadata: {
         version: '1.0.0',
         major: 1,
@@ -112,11 +138,14 @@ router.post('/upload', authenticateToken, upload.single('file'), async (req: any
         patch: 0,
         compatibility: [fileType]
       },
+=======
+>>>>>>> d346b9dd437090be178afc69cb9687aaaaf0b11c
       statistics: {
         total_parts: parts.length,
         total_parameters: parameters.length,
         total_constraints: constraints.length,
         broken_logic_count: brokenLogic.length,
+<<<<<<< HEAD
         processing_time: Date.now() - startTime,
         file_size: req.file.size
       },
@@ -241,6 +270,38 @@ router.post('/upload', authenticateToken, upload.single('file'), async (req: any
       error: 'Upload and parsing failed',
       message: 'An error occurred while processing the specialized file',
       details: process.env.NODE_ENV === 'development' ? String(error) : undefined
+=======
+        processing_time: Date.now(),
+        file_size: req.file.size
+      }
+    };
+
+    const response = {
+      id: uuidv4(),
+      filename: req.file.originalname,
+      file_type: fileType,
+      upload_date: new Date().toISOString(),
+      uploaded_by: req.user?.userId,
+      parse_result: parseResult,
+      file_path: req.file.path
+    };
+
+    console.log(`Successfully parsed file: ${req.file.originalname}`);
+
+    res.status(201).json({
+      message: 'Specialized file uploaded and parsed successfully',
+      data: response
+    });
+  } catch (error) {
+    // Clean up file if parsing fails
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+    console.error('Specialized upload error:', error);
+    res.status(500).json({ 
+      error: 'Failed to parse specialized file',
+      details: error instanceof Error ? error.message : 'Unknown error'
+>>>>>>> d346b9dd437090be178afc69cb9687aaaaf0b11c
     });
   }
 });

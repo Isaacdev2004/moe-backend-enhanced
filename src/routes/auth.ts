@@ -12,6 +12,7 @@ const users: any[] = [];
 // JWT secret (use environment variable in production)
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
+<<<<<<< HEAD
 // Extended request interface with user info
 export interface AuthenticatedRequest extends Request {
   user?: {
@@ -21,6 +22,8 @@ export interface AuthenticatedRequest extends Request {
   startTime?: number;
 }
 
+=======
+>>>>>>> d346b9dd437090be178afc69cb9687aaaaf0b11c
 // Validation middleware
 const validateSignup = [
   body('email')
