@@ -1,7 +1,28 @@
-import puppeteer from 'puppeteer';
-import * as cheerio from 'cheerio';
+// Optional dependencies - graceful degradation if not available
+let puppeteer: any = null;
+let cheerio: any = null;
+let YoutubeTranscript: any = null;
+
+try {
+  puppeteer = await import('puppeteer-core');
+} catch (error) {
+  console.log('ℹ️ Puppeteer not available - web scraping disabled');
+}
+
+try {
+  cheerio = await import('cheerio');
+} catch (error) {
+  console.log('ℹ️ Cheerio not available - HTML parsing disabled');
+}
+
+try {
+  const ytModule = await import('youtube-transcript');
+  YoutubeTranscript = ytModule.YoutubeTranscript;
+} catch (error) {
+  console.log('ℹ️ YouTube transcript not available - video scraping disabled');
+}
+
 import axios from 'axios';
-import { YoutubeTranscript } from 'youtube-transcript';
 import Parser from 'rss-parser';
 import { VectorDBService } from './VectorDBService.js';
 import { EmbeddingService } from './EmbeddingService.js';
@@ -56,14 +77,15 @@ export class KnowledgeScraperService {
     this.embeddingService = new EmbeddingService();
     this.rssParser = new Parser();
     
+    // Check if scraping dependencies are available
+    const scrapingAvailable = puppeteer && cheerio;
+    
     this.scrapingConfig = {
-      sources: [
-        ContentSource.YOUTUBE,
-        ContentSource.MOZAIK_DOCS,
-        ContentSource.COMMUNITY_FORUM,
-        ContentSource.BLOG
-      ],
-      max_content_per_source: 50,
+      sources: scrapingAvailable ? [
+        ContentSource.BLOG,
+        ContentSource.MOZAIK_DOCS
+      ] : [], // Only enable safe sources if dependencies available
+      max_content_per_source: 20, // Reduced for faster processing
       min_content_length: 200,
       relevance_keywords: [
         'mozaik', 'component', 'parameter', 'constraint', 'configuration',
@@ -71,8 +93,12 @@ export class KnowledgeScraperService {
         'tutorial', 'guide', 'documentation', 'error', 'solution'
       ],
       scraping_interval_hours: 24,
-      enabled: process.env.KNOWLEDGE_SCRAPING_ENABLED === 'true'
+      enabled: scrapingAvailable && process.env.KNOWLEDGE_SCRAPING_ENABLED === 'true'
     };
+    
+    if (!scrapingAvailable) {
+      console.log('⚠️ Web scraping dependencies not available - using curated content only');
+    }
   }
 
   /**
