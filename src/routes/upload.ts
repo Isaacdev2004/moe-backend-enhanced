@@ -108,7 +108,16 @@ router.post('/single', authenticateToken, upload.single('file'), async (req: Aut
     if (fileType) {
       try {
         // Parse the file content
-        const parseResult = await parserFactory.parseFile(file.path, fileType);
+        const parser = parserFactory.createParser(fileType);
+        const fileBuffer = fs.readFileSync(file.path);
+        const parseResult = await parser.parse(fileBuffer, {
+          filename: file.originalname,
+          file_type: fileType,
+          file_size: file.size,
+          mime_type: file.mimetype,
+          created_date: new Date().toISOString(),
+          modified_date: new Date().toISOString()
+        });
         
         // Create document for vector database
         const document: DocumentVector = {
@@ -137,7 +146,7 @@ router.post('/single', authenticateToken, upload.single('file'), async (req: Aut
         await vectorDB.addDocument(document);
 
         // Trigger RAG pipeline for automatic analysis
-        await ragPipeline.processFileUpload(document, userId);
+        await ragPipeline.processFileUpload(document.id, userId);
 
         res.status(201).json({
           message: 'File uploaded and processed successfully',

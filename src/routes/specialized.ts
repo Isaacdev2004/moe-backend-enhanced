@@ -124,7 +124,7 @@ router.post('/upload', authenticateToken, upload.single('file'), async (req: any
     await vectorDB.addDocument(document);
 
     // Trigger RAG pipeline for automatic analysis
-    await ragPipeline.processFileUpload(document, userId);
+    await ragPipeline.processFileUpload(document.id, userId);
 
     const response = {
       id: document.id,
