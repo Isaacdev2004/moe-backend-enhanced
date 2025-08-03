@@ -124,7 +124,7 @@ router.post('/single', authenticateToken, upload.single('file'), async (req: Aut
           id: uuidv4(),
           title: file.originalname,
           content: parseResult.content,
-          content_chunks: parseResult.chunks || [],
+          content_chunks: parseResult.sections?.map(section => section.content) || [],
           vectors: [],
           metadata: {
             filename: file.originalname,
