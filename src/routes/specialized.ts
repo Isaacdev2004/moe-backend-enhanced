@@ -4,7 +4,6 @@ import { authenticateToken } from './auth.js';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import path from 'path';
-<<<<<<< HEAD
 import { VectorDBService } from '../services/VectorDBService.js';
 import { DocumentVector } from '../types/vector-db.js';
 import { RAGPipelineService } from '../services/RAGPipelineService.js';
@@ -12,10 +11,6 @@ import { RAGPipelineService } from '../services/RAGPipelineService.js';
 const router = Router();
 const vectorDB = new VectorDBService();
 const ragPipeline = new RAGPipelineService();
-=======
-
-const router = Router();
->>>>>>> d346b9dd437090be178afc69cb9687aaaaf0b11c
 
 console.log('Specialized routes module loaded successfully');
 
@@ -34,48 +29,23 @@ const storage = multer.diskStorage({
   }
 });
 
-const fileFilter = (req: any, file: any, cb: any) => {
-  const allowedExtensions = ['.moz', '.dat', '.des', '.xml'];
-  const fileExtension = path.extname(file.originalname).toLowerCase();
-
-  if (allowedExtensions.includes(fileExtension)) {
-    cb(null, true);
-  } else {
-    cb(new Error(`Invalid file type: ${fileExtension}`), false);
-  }
-};
-
 const upload = multer({
-  storage,
-  fileFilter,
+  storage: storage,
+  fileFilter: (req: any, file: any, cb: any) => {
+    const allowedTypes = ['.moz', '.dat', '.des', '.xml'];
+    const fileExtension = path.extname(file.originalname).toLowerCase();
+    
+    if (allowedTypes.includes(fileExtension)) {
+      cb(null, true);
+    } else {
+      cb(new Error(`File type ${fileExtension} not supported. Allowed types: ${allowedTypes.join(', ')}`));
+    }
+  },
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
-    files: 1
+    fileSize: parseInt(process.env.MAX_FILE_SIZE || '10485760') // 10MB default
   }
 });
 
-// Test endpoint to verify parser is working
-router.get('/test', (req: Request, res: Response) => {
-  console.log('Test endpoint called');
-  try {
-    res.json({
-      message: 'Specialized parser is working!',
-      status: 'ready',
-      timestamp: new Date().toISOString(),
-      supported_types: [
-        'MOZ (.moz)',
-        'DAT (.dat)', 
-        'DES (.des)',
-        'XML (.xml)'
-      ]
-    });
-  } catch (error) {
-    console.error('Test endpoint error:', error);
-    res.status(500).json({ error: 'Test endpoint failed' });
-  }
-});
-
-<<<<<<< HEAD
 // Upload and parse specialized files - enhanced with vector storage
 router.post('/upload', authenticateToken, upload.single('file'), async (req: any, res: Response) => {
   let uploadedFilePath: string | null = null;
@@ -90,38 +60,18 @@ router.post('/upload', authenticateToken, upload.single('file'), async (req: any
 
     uploadedFilePath = req.file.path;
     const userId = req.user?.userId;
-    const startTime = Date.now(); // Add this line
+    const startTime = Date.now();
     
     console.log(`Processing specialized file: ${req.file.originalname}`);
 
-    // Parse the file using existing specialized parser
     const fileBuffer = fs.readFileSync(req.file.path);
     const fileExtension = path.extname(req.file.originalname).toLowerCase();
-    
-    // Simple parsing logic
-    const fileType = path.extname(req.file.originalname).toLowerCase().substring(1);
+    const fileType = fileExtension.substring(1);
+
+    // Parse the specialized file
     const parts = extractParts(fileBuffer.toString('utf8'), fileType);
     const parameters = extractParameters(fileBuffer.toString('utf8'), fileType);
     const constraints = extractConstraints(fileBuffer.toString('utf8'), fileType);
-=======
-// Upload and parse specialized file (simplified version)
-router.post('/upload', authenticateToken, upload.single('file'), async (req: any, res: Response) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
-    }
-
-    console.log(`Processing file: ${req.file.originalname}, size: ${req.file.size} bytes`);
-
-    const fileBuffer = fs.readFileSync(req.file.path);
-    const content = fileBuffer.toString('utf8');
-    
-    // Simple parsing logic
-    const fileType = path.extname(req.file.originalname).toLowerCase().substring(1);
-    const parts = extractParts(content, fileType);
-    const parameters = extractParameters(content, fileType);
-    const constraints = extractConstraints(content, fileType);
->>>>>>> d346b9dd437090be178afc69cb9687aaaaf0b11c
     const brokenLogic = detectBrokenLogic(parts, parameters, constraints);
 
     const parseResult = {
@@ -130,40 +80,22 @@ router.post('/upload', authenticateToken, upload.single('file'), async (req: any
       parameters: parameters,
       constraints: constraints,
       broken_logic: brokenLogic,
-<<<<<<< HEAD
       version_metadata: {
         version: '1.0.0',
-        major: 1,
-        minor: 0,
-        patch: 0,
+        parser_version: '1.0.0',
         compatibility: [fileType]
       },
-=======
->>>>>>> d346b9dd437090be178afc69cb9687aaaaf0b11c
       statistics: {
         total_parts: parts.length,
         total_parameters: parameters.length,
         total_constraints: constraints.length,
         broken_logic_count: brokenLogic.length,
-<<<<<<< HEAD
         processing_time: Date.now() - startTime,
         file_size: req.file.size
       },
-      errors: [] // Add errors array
+      errors: [],
+      warnings: brokenLogic.length > 0 ? [`Found ${brokenLogic.length} potential issues`] : []
     };
-
-    if (parseResult.errors.length > 0 && parseResult.parts.length === 0) {
-      return res.status(400).json({
-        error: 'Parsing failed',
-        message: 'Could not parse the specialized file',
-        errors: parseResult.errors,
-        file_info: {
-          name: req.file.originalname,
-          size: req.file.size,
-          type: fileExtension
-        }
-      });
-    }
 
     // Create document for vector database with specialized data
     const document: DocumentVector = {
@@ -174,11 +106,11 @@ router.post('/upload', authenticateToken, upload.single('file'), async (req: any
       vectors: [],
       metadata: {
         filename: req.file.originalname,
-        file_type: fileExtension.replace('.', ''),
+        file_type: fileType,
         file_size: req.file.size,
         upload_date: new Date().toISOString(),
         uploaded_by: userId,
-        tags: ['specialized', 'components', parseResult.file_type],
+        tags: ['specialized', 'components', fileType],
         category: 'specialized',
         language: 'en'
       },
@@ -188,226 +120,129 @@ router.post('/upload', authenticateToken, upload.single('file'), async (req: any
       status: 'processing'
     };
 
-    // Add specialized data to document
-    (document as any).specialized_data = {
-      file_type: parseResult.file_type,
-      parts: parseResult.parts,
-      parameters: parseResult.parameters,
-      constraints: parseResult.constraints,
-      version_metadata: parseResult.version_metadata,
-      broken_logic: parseResult.broken_logic,
-      statistics: parseResult.statistics
-    };
-
     // Store in vector database
-    const documentId = await vectorDB.addDocument(document);
-    
-    console.log(`✅ Specialized document stored with ID: ${documentId}`);
+    await vectorDB.addDocument(document);
 
-    // Trigger automatic diagnostic analysis
-    try {
-      const diagnosticAnalysis = await ragPipeline.processFileUpload(
-        documentId,
-        userId,
-        `Please analyze this ${parseResult.file_type} file and provide detailed diagnostics about its components, parameters, constraints, and any issues found.`
-      );
-
-      // Clean up uploaded file
-      if (fs.existsSync(uploadedFilePath)) {
-        fs.unlinkSync(uploadedFilePath);
-      }
-
-      res.status(200).json({
-        message: 'Specialized file parsed, stored, and analyzed successfully',
-        document_id: documentId,
-        parse_result: parseResult,
-        storage_info: {
-          total_chunks: document.content_chunks.length,
-          embedding_model: document.embeddings_model,
-          status: 'ready'
-        },
-        ai_diagnostics: {
-          session_id: diagnosticAnalysis.initial_response.session_id,
-          analysis: diagnosticAnalysis.initial_response.response.message.content,
-          diagnostic_summary: diagnosticAnalysis.diagnostic,
-          recommendations: diagnosticAnalysis.recommendations,
-          confidence_score: diagnosticAnalysis.initial_response.response.metadata.confidence_score,
-          issues_found: parseResult.broken_logic.length,
-          components_analyzed: parseResult.parts.length
-        }
-      });
-
-    } catch (analysisError) {
-      console.error('Diagnostic analysis failed:', analysisError);
-      
-      // Clean up uploaded file
-      if (fs.existsSync(uploadedFilePath)) {
-        fs.unlinkSync(uploadedFilePath);
-      }
-
-      res.status(200).json({
-        message: 'Specialized file parsed and stored successfully',
-        document_id: documentId,
-        parse_result: parseResult,
-        storage_info: {
-          total_chunks: document.content_chunks.length,
-          embedding_model: document.embeddings_model,
-          status: 'ready'
-        },
-        warning: 'File processed successfully but AI diagnostics failed'
-      });
-    }
-
-  } catch (error) {
-    console.error('Specialized upload error:', error);
-    
-    // Clean up file on error
-    if (uploadedFilePath && fs.existsSync(uploadedFilePath)) {
-      fs.unlinkSync(uploadedFilePath);
-    }
-    
-    res.status(500).json({
-      error: 'Upload and parsing failed',
-      message: 'An error occurred while processing the specialized file',
-      details: process.env.NODE_ENV === 'development' ? String(error) : undefined
-=======
-        processing_time: Date.now(),
-        file_size: req.file.size
-      }
-    };
+    // Trigger RAG pipeline for automatic analysis
+    await ragPipeline.processFileUpload(document, userId);
 
     const response = {
-      id: uuidv4(),
+      id: document.id,
       filename: req.file.originalname,
       file_type: fileType,
       upload_date: new Date().toISOString(),
-      uploaded_by: req.user?.userId,
+      uploaded_by: userId,
       parse_result: parseResult,
-      file_path: req.file.path
+      file_path: req.file.path,
+      vector_db_id: document.id
     };
 
-    console.log(`Successfully parsed file: ${req.file.originalname}`);
+    console.log(`Successfully processed specialized file: ${req.file.originalname}`);
 
     res.status(201).json({
       message: 'Specialized file uploaded and parsed successfully',
       data: response
     });
+
   } catch (error) {
-    // Clean up file if parsing fails
-    if (req.file && fs.existsSync(req.file.path)) {
-      fs.unlinkSync(req.file.path);
+    // Clean up file if processing fails
+    if (uploadedFilePath && fs.existsSync(uploadedFilePath)) {
+      fs.unlinkSync(uploadedFilePath);
     }
+    
     console.error('Specialized upload error:', error);
-    res.status(500).json({ 
-      error: 'Failed to parse specialized file',
-      details: error instanceof Error ? error.message : 'Unknown error'
->>>>>>> d346b9dd437090be178afc69cb9687aaaaf0b11c
+    res.status(500).json({
+      error: 'Failed to process specialized file',
+      message: 'An error occurred while processing the specialized file',
+      details: process.env.NODE_ENV === 'development' ? String(error) : undefined
     });
   }
 });
 
 // Get supported file types
 router.get('/supported-types', (req: Request, res: Response) => {
-  try {
-    const supportedTypes = [
-      {
-        type: 'xml',
-        extensions: ['.xml'],
-        description: 'XML files with parts, parameters, and constraints'
-      },
-      {
-        type: 'cab',
-        extensions: ['.cab'],
-        description: 'CAB component files with parameters and constraints'
-      },
-      {
-        type: 'cabx',
-        extensions: ['.cabx'],
-        description: 'Extended CAB files with advanced features'
-      },
-      {
-        type: 'mzb',
-        extensions: ['.mzb'],
-        description: 'Mathematical model files with variables and equations'
-      }
-    ];
+  const supportedTypes = [
+    {
+      type: 'xml',
+      extensions: ['.xml'],
+      description: 'XML files with parts, parameters, and constraints'
+    },
+    {
+      type: 'moz',
+      extensions: ['.moz'],
+      description: 'Mozaik project files with components and settings'
+    },
+    {
+      type: 'dat',
+      extensions: ['.dat'],
+      description: 'Mozaik data files with parameters and values'
+    },
+    {
+      type: 'des',
+      extensions: ['.des'],
+      description: 'Mozaik design files with layout and configuration'
+    }
+  ];
 
-    res.json({
-      message: 'Supported file types retrieved successfully',
-      supported_types: supportedTypes
-    });
-  } catch (error) {
-    console.error('Supported types error:', error);
-    res.status(500).json({ error: 'Failed to retrieve supported types' });
-  }
+  res.json({
+    message: 'Supported file types retrieved successfully',
+    supported_types: supportedTypes
+  });
 });
 
-// Simple parsing functions
+// Test endpoint
+router.get('/test', (req: Request, res: Response) => {
+  res.json({
+    message: 'Specialized parser is working!',
+    status: 'ready',
+    timestamp: new Date().toISOString(),
+    supported_types: [
+      'MOZ (.moz)',
+      'DAT (.dat)', 
+      'DES (.des)',
+      'XML (.xml)'
+    ]
+  });
+});
+
+// Helper functions for parsing specialized files
 function extractParts(content: string, fileType: string): any[] {
   const parts: any[] = [];
   
-  if (fileType === 'xml') {
-    // Simple XML parsing
-    const partMatches = content.match(/<part[^>]*>.*?<\/part>/gs);
-    if (partMatches) {
-      partMatches.forEach((match, index) => {
-        const idMatch = match.match(/id="([^"]*)"/);
-        const nameMatch = match.match(/<name>([^<]*)<\/name>/);
-        parts.push({
-          id: idMatch ? idMatch[1] : `part_${index}`,
-          name: nameMatch ? nameMatch[1] : `Part ${index}`,
-          type: 'component',
-          parameters: [],
-          constraints: [],
-          status: 'valid'
+  try {
+    // Extract parts based on file type
+    if (fileType === 'xml') {
+      const partMatches = content.match(/<part[^>]*>[\s\S]*?<\/part>/gi);
+      if (partMatches) {
+        partMatches.forEach((match, index) => {
+          const nameMatch = match.match(/name=["']([^"']+)["']/i);
+          const typeMatch = match.match(/type=["']([^"']+)["']/i);
+          
+          parts.push({
+            id: `part_${index}`,
+            name: nameMatch ? nameMatch[1] : `Part ${index + 1}`,
+            type: typeMatch ? typeMatch[1] : 'unknown',
+            content: match.trim()
+          });
         });
-      });
-    }
-  } else if (fileType === 'moz') {
-    // Simple MOZ parsing
-    const mozMatches = content.match(/MOZ_[A-Z_]+/g);
-    if (mozMatches) {
-      mozMatches.forEach((match, index) => {
-        parts.push({
-          id: `moz_${index}`,
-          name: match,
-          type: 'moz_component',
-          parameters: [],
-          constraints: [],
-          status: 'valid'
+      }
+    } else if (fileType === 'moz') {
+      const partMatches = content.match(/component[^}]*{[\s\S]*?}/gi);
+      if (partMatches) {
+        partMatches.forEach((match, index) => {
+          const nameMatch = match.match(/name\s*:\s*["']([^"']+)["']/i);
+          
+          parts.push({
+            id: `component_${index}`,
+            name: nameMatch ? nameMatch[1] : `Component ${index + 1}`,
+            type: 'component',
+            content: match.trim()
+          });
         });
-      });
+      }
     }
-  } else if (fileType === 'dat') {
-    // Simple DAT parsing
-    const datMatches = content.match(/DAT_[A-Z_]+/g);
-    if (datMatches) {
-      datMatches.forEach((match, index) => {
-        parts.push({
-          id: `dat_${index}`,
-          name: match,
-          type: 'dat_component',
-          parameters: [],
-          constraints: [],
-          status: 'valid'
-        });
-      });
-    }
-  } else if (fileType === 'des') {
-    // Simple DES parsing
-    const desMatches = content.match(/DES_[A-Z_]+/g);
-    if (desMatches) {
-      desMatches.forEach((match, index) => {
-        parts.push({
-          id: `des_${index}`,
-          name: match,
-          type: 'des_component',
-          parameters: [],
-          constraints: [],
-          status: 'valid'
-        });
-      });
-    }
+  } catch (error) {
+    console.error('Error extracting parts:', error);
   }
   
   return parts;
@@ -416,39 +251,44 @@ function extractParts(content: string, fileType: string): any[] {
 function extractParameters(content: string, fileType: string): any[] {
   const parameters: any[] = [];
   
-  if (fileType === 'xml') {
-    // Simple XML parameter extraction
-    const paramMatches = content.match(/<parameter[^>]*>.*?<\/parameter>/gs);
-    if (paramMatches) {
-      paramMatches.forEach((match, index) => {
-        const nameMatch = match.match(/name="([^"]*)"/);
-        const valueMatch = match.match(/value="([^"]*)"/);
-        parameters.push({
-          id: `param_${index}`,
-          name: nameMatch ? nameMatch[1] : `Parameter ${index}`,
-          value: valueMatch ? valueMatch[1] : '',
-          type: 'string',
-          required: false
-        });
-      });
-    }
-  } else {
-    // Simple key-value extraction for MOZ/DAT/DES
-    const lines = content.split('\n');
-    lines.forEach((line, index) => {
-      if (line.includes('=')) {
-        const [key, value] = line.split('=').map(s => s.trim());
-        if (key && value) {
+  try {
+    // Extract parameters based on file type
+    if (fileType === 'xml') {
+      const paramMatches = content.match(/<parameter[^>]*>[\s\S]*?<\/parameter>/gi);
+      if (paramMatches) {
+        paramMatches.forEach((match, index) => {
+          const nameMatch = match.match(/name=["']([^"']+)["']/i);
+          const valueMatch = match.match(/value=["']([^"']+)["']/i);
+          const typeMatch = match.match(/type=["']([^"']+)["']/i);
+          
           parameters.push({
             id: `param_${index}`,
-            name: key,
-            value: value,
-            type: 'string',
-            required: false
+            name: nameMatch ? nameMatch[1] : `Parameter ${index + 1}`,
+            value: valueMatch ? valueMatch[1] : '',
+            type: typeMatch ? typeMatch[1] : 'string',
+            content: match.trim()
           });
-        }
+        });
       }
-    });
+    } else if (fileType === 'dat') {
+      const paramMatches = content.match(/param[^}]*{[\s\S]*?}/gi);
+      if (paramMatches) {
+        paramMatches.forEach((match, index) => {
+          const nameMatch = match.match(/name\s*:\s*["']([^"']+)["']/i);
+          const valueMatch = match.match(/value\s*:\s*["']([^"']+)["']/i);
+          
+          parameters.push({
+            id: `param_${index}`,
+            name: nameMatch ? nameMatch[1] : `Parameter ${index + 1}`,
+            value: valueMatch ? valueMatch[1] : '',
+            type: 'data',
+            content: match.trim()
+          });
+        });
+      }
+    }
+  } catch (error) {
+    console.error('Error extracting parameters:', error);
   }
   
   return parameters;
@@ -457,70 +297,88 @@ function extractParameters(content: string, fileType: string): any[] {
 function extractConstraints(content: string, fileType: string): any[] {
   const constraints: any[] = [];
   
-  if (fileType === 'xml') {
-    // Simple XML constraint extraction
-    const constraintMatches = content.match(/<constraint[^>]*>.*?<\/constraint>/gs);
-    if (constraintMatches) {
-      constraintMatches.forEach((match, index) => {
-        const nameMatch = match.match(/name="([^"]*)"/);
-        constraints.push({
-          id: `constraint_${index}`,
-          name: nameMatch ? nameMatch[1] : `Constraint ${index}`,
-          type: 'custom',
-          value: match,
-          severity: 'error'
-        });
-      });
-    }
-  } else {
-    // Simple constraint extraction for MOZ/DAT/DES
-    const lines = content.split('\n');
-    lines.forEach((line, index) => {
-      if (line.toUpperCase().includes('CONSTRAINT')) {
-        constraints.push({
-          id: `constraint_${index}`,
-          name: `Constraint ${index}`,
-          type: 'custom',
-          value: line,
-          severity: 'error'
+  try {
+    // Extract constraints based on file type
+    if (fileType === 'xml') {
+      const constraintMatches = content.match(/<constraint[^>]*>[\s\S]*?<\/constraint>/gi);
+      if (constraintMatches) {
+        constraintMatches.forEach((match, index) => {
+          const typeMatch = match.match(/type=["']([^"']+)["']/i);
+          const valueMatch = match.match(/value=["']([^"']+)["']/i);
+          
+          constraints.push({
+            id: `constraint_${index}`,
+            type: typeMatch ? typeMatch[1] : 'unknown',
+            value: valueMatch ? valueMatch[1] : '',
+            content: match.trim()
+          });
         });
       }
-    });
+    } else if (fileType === 'des') {
+      const constraintMatches = content.match(/constraint[^}]*{[\s\S]*?}/gi);
+      if (constraintMatches) {
+        constraintMatches.forEach((match, index) => {
+          const typeMatch = match.match(/type\s*:\s*["']([^"']+)["']/i);
+          
+          constraints.push({
+            id: `constraint_${index}`,
+            type: typeMatch ? typeMatch[1] : 'unknown',
+            value: '',
+            content: match.trim()
+          });
+        });
+      }
+    }
+  } catch (error) {
+    console.error('Error extracting constraints:', error);
   }
   
   return constraints;
 }
 
 function detectBrokenLogic(parts: any[], parameters: any[], constraints: any[]): any[] {
-  const brokenLogic: any[] = [];
+  const issues: any[] = [];
   
-  // Check for missing required parameters
-  parameters.forEach(param => {
-    if (param.required && (!param.value || param.value === '')) {
-      brokenLogic.push({
-        part_id: 'unknown',
-        issue_type: 'missing_parameter',
-        severity: 'high',
-        description: `Required parameter '${param.name}' is missing`,
-        suggested_fix: `Add a value for parameter '${param.name}'`
+  try {
+    // Check for missing required parameters
+    const requiredParams = parameters.filter(p => p.type === 'required');
+    if (requiredParams.length === 0 && parts.length > 0) {
+      issues.push({
+        type: 'missing_required_params',
+        severity: 'warning',
+        message: 'No required parameters found for components'
       });
     }
-  });
-  
-  // Check for invalid constraints
-  constraints.forEach(constraint => {
-    if (!constraint.value || constraint.value === '') {
-      brokenLogic.push({
-        part_id: 'unknown',
-        issue_type: 'invalid_constraint',
-        severity: 'medium',
-        description: `Constraint '${constraint.name}' has no value`,
-        suggested_fix: 'Add a valid value for the constraint'
+    
+    // Check for constraint violations
+    constraints.forEach(constraint => {
+      if (constraint.type === 'range') {
+        const value = parseFloat(constraint.value);
+        if (isNaN(value)) {
+          issues.push({
+            type: 'invalid_constraint_value',
+            severity: 'error',
+            message: `Invalid range constraint value: ${constraint.value}`,
+            constraint_id: constraint.id
+          });
+        }
+      }
+    });
+    
+    // Check for orphaned parts
+    if (parts.length > 0 && parameters.length === 0) {
+      issues.push({
+        type: 'orphaned_parts',
+        severity: 'warning',
+        message: 'Parts found without associated parameters'
       });
     }
-  });
+    
+  } catch (error) {
+    console.error('Error detecting broken logic:', error);
+  }
   
-  return brokenLogic;
+  return issues;
 }
 
 export { router as specializedRoutes }; 

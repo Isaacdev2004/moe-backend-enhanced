@@ -1,6 +1,5 @@
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
-<<<<<<< HEAD
 import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
@@ -15,14 +14,6 @@ import { RAGPipelineService } from '../services/RAGPipelineService.js';
 const router = Router();
 const vectorDB = new VectorDBService();
 const ragPipeline = new RAGPipelineService();
-=======
-import path from 'path';
-import fs from 'fs';
-import { v4 as uuidv4 } from 'uuid';
-import { authenticateToken } from './auth.js';
-
-const router = Router();
->>>>>>> d346b9dd437090be178afc69cb9687aaaaf0b11c
 
 // Ensure uploads directory exists
 const uploadsDir = process.env.UPLOAD_PATH || 'uploads';
@@ -48,19 +39,22 @@ const fileFilter = (req: any, file: any, cb: any) => {
     'image/jpg',
     'image/png',
     'image/gif',
-    'image/webp',
-    'application/pdf',
     'text/plain',
+    'text/csv',
+    'application/pdf',
     'application/msword',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'application/zip',
-    'application/x-zip-compressed'
+    'text/markdown',
+    'application/json',
+    'text/xml',
+    'text/html',
+    'application/xml'
   ];
 
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error(`Invalid file type: ${file.mimetype}`), false);
+    cb(new Error(`File type ${file.mimetype} not supported`), false);
   }
 };
 
@@ -68,12 +62,11 @@ const upload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: parseInt(process.env.MAX_FILE_SIZE || '10485760'), // 10MB limit
-    files: 5 // Max 5 files per request
+    fileSize: parseInt(process.env.MAX_FILE_SIZE || '10485760') // 10MB default
   }
 });
 
-// Helper function to clean up uploaded files
+// Cleanup function for uploaded files
 const cleanupFile = (filePath: string) => {
   try {
     if (fs.existsSync(filePath)) {
@@ -84,19 +77,13 @@ const cleanupFile = (filePath: string) => {
   }
 };
 
-<<<<<<< HEAD
 // Upload single file endpoint - enhanced with vector storage
 router.post('/single', authenticateToken, upload.single('file'), async (req: AuthenticatedRequest, res: Response) => {
-=======
-// Single file upload
-router.post('/single', authenticateToken, upload.single('file'), (req: any, res: Response) => {
->>>>>>> d346b9dd437090be178afc69cb9687aaaaf0b11c
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-<<<<<<< HEAD
     const userId = req.user!.userId;
     const file = req.file;
     
@@ -120,34 +107,25 @@ router.post('/single', authenticateToken, upload.single('file'), (req: any, res:
     
     if (fileType) {
       try {
-        const parser = parserFactory.createParser(fileType);
-        const fileBuffer = fs.readFileSync(file.path);
-        const parseResult = await parser.parse(fileBuffer, {
-          filename: file.originalname,
-          file_type: fileType,
-          file_size: file.size,
-          mime_type: file.mimetype,
-          created_date: new Date().toISOString(),
-          modified_date: new Date().toISOString()
-        });
-
+        // Parse the file content
+        const parseResult = await parserFactory.parseFile(file.path, fileType);
+        
         // Create document for vector database
         const document: DocumentVector = {
-          id: fileInfo.id,
-          title: parseResult.metadata.title || file.originalname,
+          id: uuidv4(),
+          title: file.originalname,
           content: parseResult.content,
-          content_chunks: [], // Will be populated by VectorDBService
-          vectors: [], // Will be populated by VectorDBService
+          content_chunks: parseResult.chunks || [],
+          vectors: [],
           metadata: {
             filename: file.originalname,
             file_type: fileType,
             file_size: file.size,
             upload_date: new Date().toISOString(),
             uploaded_by: userId,
-            tags: req.body.tags ? req.body.tags.split(',').map((tag: string) => tag.trim()) : [],
-            category: req.body.category || 'general',
-            language: parseResult.metadata.language || 'en',
-            page_count: parseResult.metadata.page_count
+            tags: ['uploaded', fileType],
+            category: 'user_upload',
+            language: 'en'
           },
           embeddings_model: '',
           created_at: new Date().toISOString(),
@@ -156,132 +134,59 @@ router.post('/single', authenticateToken, upload.single('file'), (req: any, res:
         };
 
         // Store in vector database
-        const documentId = await vectorDB.addDocument(document);
-        
-        console.log(`✅ Document processed and stored with ID: ${documentId}`);
+        await vectorDB.addDocument(document);
 
-        // Trigger automatic RAG analysis for the uploaded file
-        try {
-          const autoAnalysis = await ragPipeline.processFileUpload(
-            documentId,
-            userId,
-            `Please analyze this ${fileType} file and provide an overview of its contents, structure, and any potential issues.`
-          );
+        // Trigger RAG pipeline for automatic analysis
+        await ragPipeline.processFileUpload(document, userId);
 
-          res.status(200).json({
-            message: 'File uploaded and processed successfully',
-            file: fileInfo,
-            document: {
-              id: documentId,
-              title: document.title,
-              status: 'ready',
-              chunks_count: document.content_chunks.length,
-              embedding_model: document.embeddings_model
-            },
-            parsing: {
-              content_length: parseResult.content.length,
-              sections_count: parseResult.sections.length,
-              tables_count: parseResult.tables.length,
-              links_count: parseResult.links.length,
-              errors_count: parseResult.errors.length
-            },
-            ai_analysis: {
-              session_id: autoAnalysis.initial_response.session_id,
-              summary: autoAnalysis.initial_response.response.message.content,
-              recommendations: autoAnalysis.recommendations,
-              diagnostic_status: autoAnalysis.diagnostic.summary,
-              confidence_score: autoAnalysis.initial_response.response.metadata.confidence_score
-            }
-          });
-        } catch (analysisError) {
-          console.error('Auto-analysis failed:', analysisError);
-          
-          // Still return success for upload, but without AI analysis
-          res.status(200).json({
-            message: 'File uploaded and processed successfully',
-            file: fileInfo,
-            document: {
-              id: documentId,
-              title: document.title,
-              status: 'ready',
-              chunks_count: document.content_chunks.length,
-              embedding_model: document.embeddings_model
-            },
-            parsing: {
-              content_length: parseResult.content.length,
-              sections_count: parseResult.sections.length,
-              tables_count: parseResult.tables.length,
-              links_count: parseResult.links.length,
-              errors_count: parseResult.errors.length
-            },
-            warning: 'File processed successfully but AI analysis failed'
-          });
-        }
-      } catch (parseError) {
-        console.error('Error parsing file:', parseError);
-        
-        // Still store file info but without processing
-        res.status(200).json({
-          message: 'File uploaded but could not be processed',
+        res.status(201).json({
+          message: 'File uploaded and processed successfully',
           file: fileInfo,
-          warning: 'File parsing failed',
-          error: String(parseError)
+          parse_result: parseResult,
+          vector_db_id: document.id
+        });
+
+      } catch (parseError) {
+        console.error('File parsing error:', parseError);
+        
+        // Still store basic file info even if parsing fails
+        res.status(201).json({
+          message: 'File uploaded successfully (parsing failed)',
+          file: fileInfo,
+          warning: 'File content could not be parsed'
         });
       }
     } else {
-      res.status(200).json({
+      // Store file info for unsupported types
+      res.status(201).json({
         message: 'File uploaded successfully',
         file: fileInfo,
-        warning: 'File type not supported for text extraction'
+        warning: 'File type not supported for parsing'
       });
     }
-  } catch (error) {
-    console.error('Upload error:', error);
-    
-    // Clean up file if upload failed
-    if (req.file && fs.existsSync(req.file.path)) {
-      fs.unlinkSync(req.file.path);
-    }
-    
-    res.status(500).json({
-      error: 'Upload failed',
-      message: 'An error occurred during file upload'
-    });
-=======
-    const fileInfo = {
-      id: uuidv4(),
-      originalName: req.file.originalname,
-      filename: req.file.filename,
-      mimetype: req.file.mimetype,
-      size: req.file.size,
-      path: req.file.path,
-      uploadedBy: req.user?.userId,
-      uploadedAt: new Date().toISOString()
-    };
 
-    res.status(201).json({
-      message: 'File uploaded successfully',
-      file: fileInfo
-    });
   } catch (error) {
     // Clean up file if upload fails
     if (req.file) {
       cleanupFile(req.file.path);
     }
+    
     console.error('Upload error:', error);
-    res.status(500).json({ error: 'Upload failed' });
->>>>>>> d346b9dd437090be178afc69cb9687aaaaf0b11c
+    res.status(500).json({
+      error: 'Upload failed',
+      message: 'An error occurred during file upload'
+    });
   }
 });
 
-// Multiple files upload
-router.post('/multiple', authenticateToken, upload.array('files', 5), (req: any, res: Response) => {
+// Upload multiple files
+router.post('/multiple', authenticateToken, upload.array('files', 10), (req: any, res: Response) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: 'No files uploaded' });
     }
 
-    const files = (req.files as any[]).map(file => ({
+    const uploadedFiles = req.files.map((file: any) => ({
       id: uuidv4(),
       originalName: file.originalname,
       filename: file.filename,
@@ -294,45 +199,55 @@ router.post('/multiple', authenticateToken, upload.array('files', 5), (req: any,
 
     res.status(201).json({
       message: 'Files uploaded successfully',
-      files,
-      count: files.length
+      files: uploadedFiles
     });
+
   } catch (error) {
     // Clean up files if upload fails
     if (req.files) {
-      (req.files as any[]).forEach(file => cleanupFile(file.path));
+      req.files.forEach((file: any) => {
+        cleanupFile(file.path);
+      });
     }
-    console.error('Upload error:', error);
-    res.status(500).json({ error: 'Upload failed' });
+    
+    console.error('Multiple upload error:', error);
+    res.status(500).json({ error: 'Multiple upload failed' });
   }
 });
 
-// Get uploaded files for user
-router.get('/files', authenticateToken, (req: any, res: Response) => {
+// Get user's uploaded files
+router.get('/files', authenticateToken, (req: AuthenticatedRequest, res: Response) => {
   try {
-    // In a real application, you would query a database
-    // For now, we'll return a mock response
-    res.json({
+    const userId = req.user!.userId;
+    
+    // In a real application, you would query the database for user's files
+    // For now, return a mock response
+    res.status(200).json({
+      message: 'User files retrieved successfully',
       files: [],
-      message: 'No files found for this user'
+      user_id: userId
     });
+
   } catch (error) {
     console.error('Get files error:', error);
     res.status(500).json({ error: 'Failed to retrieve files' });
   }
 });
 
-// Delete file
-router.delete('/files/:fileId', authenticateToken, (req: any, res: Response) => {
+// Delete uploaded file
+router.delete('/files/:fileId', authenticateToken, (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { fileId } = req.params;
+    const fileId = req.params.fileId;
+    const userId = req.user!.userId;
     
-    // In a real application, you would delete from database and file system
-    // For now, we'll just return success
-    res.json({
+    // In a real application, you would delete the file from storage and database
+    // For now, return a mock response
+    res.status(200).json({
       message: 'File deleted successfully',
-      fileId
+      file_id: fileId,
+      user_id: userId
     });
+
   } catch (error) {
     console.error('Delete file error:', error);
     res.status(500).json({ error: 'Failed to delete file' });
