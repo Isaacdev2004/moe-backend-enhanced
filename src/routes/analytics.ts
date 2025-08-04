@@ -1,9 +1,8 @@
 import { Router, Request, Response } from 'express';
 import { query, validationResult } from 'express-validator';
-import { authenticateToken } from './auth.js';
+import { authenticateToken, AuthenticatedRequest } from './auth.js';
 import { VectorDBService } from '../services/VectorDBService.js';
 import { DocumentModel, SearchQueryModel } from '../models/Document.js';
-import { AuthenticatedRequest } from '../types/authenticated-request.js';
 
 const router = Router();
 const vectorDB = new VectorDBService();
