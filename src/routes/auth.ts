@@ -18,6 +18,12 @@ export interface AuthenticatedRequest extends Request {
     email: string;
   };
   startTime?: number;
+  body: any;
+  query: any;
+  params: any;
+  headers: any;
+  file?: any;
+  files?: any;
 }
 
 // Validation middleware
