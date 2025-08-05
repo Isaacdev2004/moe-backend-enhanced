@@ -215,7 +215,7 @@ export class KnowledgeScraperService {
           const content = await this.scrapeFromCuratedSource(curatedSource);
           
           if (content.length > 0) {
-            await this.processAndStoreContent(content);
+            await this.processAndIngestContent(content);
             by_source[curatedSource.source] = (by_source[curatedSource.source] || 0) + content.length;
             console.log(`✅ Scraped ${content.length} items from ${curatedSource.name}`);
           }
@@ -235,7 +235,7 @@ export class KnowledgeScraperService {
             const content = await this.scrapeFromSource(source);
             
             if (content.length > 0) {
-              await this.processAndStoreContent(content);
+              await this.processAndIngestContent(content);
               by_source[source] = (by_source[source] || 0) + content.length;
               console.log(`✅ Scraped ${content.length} items from ${source}`);
             }
@@ -329,6 +329,25 @@ export class KnowledgeScraperService {
     }
     
     return content;
+  }
+
+  /**
+   * Scrape content from a specific source
+   */
+  private async scrapeFromSource(source: ContentSource): Promise<ScrapedContent[]> {
+    switch (source) {
+      case ContentSource.YOUTUBE:
+        return this.scrapeYouTubeContent();
+      case ContentSource.MOZAIK_DOCS:
+        return this.scrapeMozaikDocs();
+      case ContentSource.COMMUNITY_FORUM:
+        return this.scrapeCommunityForum();
+      case ContentSource.BLOG:
+        return this.scrapeBlogContent();
+      default:
+        console.warn(`Scraping not implemented for source: ${source}`);
+        return [];
+    }
   }
 
   /**
