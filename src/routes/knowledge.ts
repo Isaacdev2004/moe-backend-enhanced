@@ -3,6 +3,8 @@ import { body, validationResult } from 'express-validator';
 import { authenticateToken, AuthenticatedRequest } from './auth.js';
 import { ContentIngestionService } from '../services/ContentIngestionService.js';
 import { KnowledgeScraperService } from '../services/KnowledgeScraperService.js';
+import { CuratedSource } from '../types/CuratedSource.js';
+import { v4 as uuidv4 } from 'uuid';
 
 const router = Router();
 const contentIngestion = new ContentIngestionService();
@@ -363,6 +365,125 @@ router.get('/insights', authenticateToken, async (req: AuthenticatedRequest, res
     res.status(500).json({
       error: 'Failed to retrieve insights',
       message: 'An error occurred while retrieving knowledge insights'
+    });
+  }
+});
+
+// Get curated sources
+router.get('/curated-sources', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const sources = knowledgeScraper.getCuratedSources();
+    
+    res.status(200).json({
+      success: true,
+      message: 'Curated sources retrieved successfully',
+      sources: sources,
+      total_sources: sources.length
+    });
+  } catch (error) {
+    console.error('Error getting curated sources:', error);
+    res.status(500).json({
+      error: 'Failed to get curated sources',
+      message: 'An error occurred while retrieving curated sources'
+    });
+  }
+});
+
+// Add curated source
+router.post('/curated-sources', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { name, url, source, content_type, description, relevance_score, tags } = req.body;
+    
+    if (!name || !url || !source || !content_type) {
+      return res.status(400).json({
+        error: 'Missing required fields',
+        message: 'Name, URL, source, and content_type are required'
+      });
+    }
+
+    const newSource: CuratedSource = {
+      id: uuidv4(),
+      name,
+      url,
+      source,
+      content_type,
+      description: description || '',
+      relevance_score: relevance_score || 0.8,
+      last_verified: new Date().toISOString(),
+      tags: tags || []
+    };
+
+    await knowledgeScraper.addCuratedSource(newSource);
+    
+    res.status(201).json({
+      success: true,
+      message: 'Curated source added successfully',
+      source: newSource
+    });
+  } catch (error) {
+    console.error('Error adding curated source:', error);
+    res.status(500).json({
+      error: 'Failed to add curated source',
+      message: 'An error occurred while adding the curated source'
+    });
+  }
+});
+
+// Update curated sources with specific URLs
+router.put('/curated-sources', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { sources } = req.body;
+    
+    if (!Array.isArray(sources)) {
+      return res.status(400).json({
+        error: 'Invalid sources format',
+        message: 'Sources must be an array'
+      });
+    }
+
+    // Validate sources
+    for (const source of sources) {
+      if (!source.name || !source.url || !source.source || !source.content_type) {
+        return res.status(400).json({
+          error: 'Invalid source format',
+          message: 'Each source must have name, url, source, and content_type'
+        });
+      }
+    }
+
+    await knowledgeScraper.updateCuratedSources(sources);
+    
+    res.status(200).json({
+      success: true,
+      message: 'Curated sources updated successfully',
+      total_sources: sources.length
+    });
+  } catch (error) {
+    console.error('Error updating curated sources:', error);
+    res.status(500).json({
+      error: 'Failed to update curated sources',
+      message: 'An error occurred while updating curated sources'
+    });
+  }
+});
+
+// Remove curated source
+router.delete('/curated-sources/:sourceId', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { sourceId } = req.params;
+    
+    await knowledgeScraper.removeCuratedSource(sourceId);
+    
+    res.status(200).json({
+      success: true,
+      message: 'Curated source removed successfully',
+      source_id: sourceId
+    });
+  } catch (error) {
+    console.error('Error removing curated source:', error);
+    res.status(500).json({
+      error: 'Failed to remove curated source',
+      message: 'An error occurred while removing the curated source'
     });
   }
 });
