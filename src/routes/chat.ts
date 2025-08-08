@@ -22,7 +22,7 @@ const validateChatMessage = [
 
 const validateFileAnalysis = [
   body('file_id').isString().withMessage('File ID is required'),
-  body('analysis_query').optional().isLength({ max: 500 }).withMessage('Analysis query too long')
+  body('query').optional().isLength({ max: 500 }).withMessage('Analysis query too long')
 ];
 
 // Enhanced chat endpoint with comprehensive knowledge base integration
@@ -40,6 +40,16 @@ router.post('/enhanced-message', authenticateToken, validateChatMessage, async (
     const userId = req.user!.userId;
 
     console.log(`🧠 Enhanced chat message from user ${userId}: "${message}"`);
+
+    // Check if knowledge base is initialized
+    const kbStats = await vectorDB.getStats();
+    if (kbStats.total_documents === 0) {
+      return res.status(503).json({
+        error: 'Knowledge base not initialized',
+        message: 'The knowledge base is still being populated. Please try again in a few minutes or contact support.',
+        suggestion: 'Try POST /api/knowledge/initialize to manually initialize the knowledge base'
+      });
+    }
 
     // Get conversation history if session exists
     const conversationHistory = session_id 
@@ -98,16 +108,16 @@ router.post('/enhanced-message', authenticateToken, validateChatMessage, async (
       metadata: {
         processing_time: enhancedResponse.response.metadata.processing_time,
         tokens_used: enhancedResponse.response.metadata.tokens_used,
-        confidence_level: enhancedResponse.knowledge_coverage.confidence_level,
-        model_used: enhancedResponse.response.metadata.model_used
+        context_sources: enhancedResponse.enhanced_context.total_context_sources,
+        timestamp: new Date().toISOString()
       }
     });
-
   } catch (error) {
     console.error('Enhanced chat error:', error);
     res.status(500).json({
       error: 'Enhanced chat processing failed',
-      message: 'An error occurred while processing your message with enhanced context'
+      message: 'An error occurred while processing your enhanced chat message',
+      details: process.env.NODE_ENV === 'development' ? String(error) : undefined
     });
   }
 });
@@ -127,6 +137,16 @@ router.post('/message', authenticateToken, validateChatMessage, async (req: Auth
     const userId = req.user!.userId;
 
     console.log(`💬 Chat message from user ${userId}: "${message}"`);
+
+    // Check if knowledge base is initialized
+    const kbStats = await vectorDB.getStats();
+    if (kbStats.total_documents === 0) {
+      return res.status(503).json({
+        error: 'Knowledge base not initialized',
+        message: 'The knowledge base is still being populated. Please try again in a few minutes or contact support.',
+        suggestion: 'Try POST /api/knowledge/initialize to manually initialize the knowledge base'
+      });
+    }
 
     // Process through RAG pipeline
     const response = await ragPipeline.processQuery(

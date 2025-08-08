@@ -3,12 +3,14 @@ import { body, validationResult } from 'express-validator';
 import { authenticateToken, AuthenticatedRequest } from './auth.js';
 import { ContentIngestionService } from '../services/ContentIngestionService.js';
 import { KnowledgeScraperService } from '../services/KnowledgeScraperService.js';
+import { VectorDBService } from '../services/VectorDBService.js';
 import { CuratedSource } from '../types/CuratedSource.js';
 import { v4 as uuidv4 } from 'uuid';
 
 const router = Router();
 const contentIngestion = new ContentIngestionService();
 const knowledgeScraper = new KnowledgeScraperService();
+const vectorDB = new VectorDBService();
 
 // Initialize knowledge base on first startup
 let isInitialized = false;
@@ -477,6 +479,82 @@ router.delete('/curated-sources/:sourceId', authenticateToken, async (req: Authe
     res.status(500).json({
       error: 'Failed to remove curated source',
       message: 'An error occurred while removing the curated source'
+    });
+  }
+});
+
+// Test endpoint to populate basic knowledge for testing
+router.post('/populate-test-data', async (req: Request, res: Response) => {
+  try {
+    console.log('🧪 Populating test knowledge data...');
+    
+    // Add some basic test documents to the vector database
+    const testDocuments = [
+      {
+        id: 'test-doc-1',
+        title: 'Mozaik Configuration Best Practices',
+        content: 'When configuring Mozaik cabinets, always ensure that your parameters are properly set. Check material thickness, door overlays, and drawer box specifications. Common issues include incorrect material.th values and misaligned constraint logic.',
+        content_chunks: ['When configuring Mozaik cabinets, always ensure that your parameters are properly set.', 'Check material thickness, door overlays, and drawer box specifications.'],
+        vectors: [],
+        metadata: {
+          filename: 'test-knowledge.txt',
+          file_type: 'knowledge_base',
+          source: 'manual',
+          upload_date: new Date().toISOString(),
+          uploaded_by: 'system',
+          tags: ['mozaik', 'configuration', 'best-practices'],
+          category: 'knowledge_base',
+          language: 'en'
+        },
+        embeddings_model: 'text-embedding-3-small',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        status: 'ready'
+      },
+      {
+        id: 'test-doc-2',
+        title: 'Common Mozaik Troubleshooting',
+        content: 'Common Mozaik issues include cabinet doors not appearing, drawer boxes overlapping, and CNC cutting errors. To fix cabinet door issues, check visibility conditions and part logic. For CNC errors, verify material optimization and tooling parameters.',
+        content_chunks: ['Common Mozaik issues include cabinet doors not appearing, drawer boxes overlapping, and CNC cutting errors.', 'To fix cabinet door issues, check visibility conditions and part logic.'],
+        vectors: [],
+        metadata: {
+          filename: 'troubleshooting-guide.txt',
+          file_type: 'knowledge_base',
+          source: 'manual',
+          upload_date: new Date().toISOString(),
+          uploaded_by: 'system',
+          tags: ['mozaik', 'troubleshooting', 'errors', 'solutions'],
+          category: 'knowledge_base',
+          language: 'en'
+        },
+        embeddings_model: 'text-embedding-3-small',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        status: 'ready'
+      }
+    ];
+
+    // Add documents to vector database
+    for (const doc of testDocuments) {
+      await vectorDB.addDocument(doc);
+    }
+
+    const stats = await vectorDB.getStats();
+
+    res.status(200).json({
+      message: 'Test knowledge data populated successfully',
+      status: 'ready',
+      documents_added: testDocuments.length,
+      total_documents: stats.total_documents,
+      note: 'This is test data for development. Use /initialize for full knowledge base.'
+    });
+
+  } catch (error) {
+    console.error('Error populating test data:', error);
+    res.status(500).json({
+      error: 'Failed to populate test data',
+      message: 'An error occurred while adding test knowledge',
+      details: process.env.NODE_ENV === 'development' ? String(error) : undefined
     });
   }
 });
