@@ -97,74 +97,161 @@ export class KnowledgeScraperService {
     
     // Curated list of specific, vetted sources
     const curatedSources: CuratedSource[] = [
-      // YouTube - Specific Mozaik videos
+      // YouTube - Specific Mozaik channels
       {
-        id: 'yt-mozaik-tutorial-1',
-        name: 'Mozaik Software Tutorial - Getting Started',
-        url: 'https://www.youtube.com/watch?v=example1',
+        id: 'yt-mozaik-software',
+        name: 'Mozaik Software Official Channel',
+        url: 'https://www.youtube.com/@MozaikSoftware',
         source: ContentSource.YOUTUBE,
         content_type: 'video_transcript',
-        description: 'Official Mozaik tutorial for beginners',
-        relevance_score: 0.95,
-        last_verified: new Date().toISOString(),
-        tags: ['tutorial', 'beginner', 'getting-started', 'official']
-      },
-      {
-        id: 'yt-mozaik-configuration',
-        name: 'Mozaik Component Configuration Guide',
-        url: 'https://www.youtube.com/watch?v=example2',
-        source: ContentSource.YOUTUBE,
-        content_type: 'video_transcript',
-        description: 'Deep dive into Mozaik component configuration',
-        relevance_score: 0.90,
-        last_verified: new Date().toISOString(),
-        tags: ['configuration', 'components', 'advanced', 'technical']
-      },
-      {
-        id: 'yt-mozaik-troubleshooting',
-        name: 'Mozaik Troubleshooting Common Issues',
-        url: 'https://www.youtube.com/watch?v=example3',
-        source: ContentSource.YOUTUBE,
-        content_type: 'video_transcript',
-        description: 'Common Mozaik issues and solutions',
-        relevance_score: 0.88,
-        last_verified: new Date().toISOString(),
-        tags: ['troubleshooting', 'solutions', 'common-issues', 'help']
-      },
-      // Facebook - Specific Mozaik community posts
-      {
-        id: 'fb-mozaik-community-1',
-        name: 'Mozaik Community - Best Practices Discussion',
-        url: 'https://www.facebook.com/groups/mozaikcommunity/posts/example1',
-        source: ContentSource.FACEBOOK,
-        content_type: 'social_post',
-        description: 'Community discussion on Mozaik best practices',
-        relevance_score: 0.85,
-        last_verified: new Date().toISOString(),
-        tags: ['best-practices', 'community', 'discussion', 'tips']
-      },
-      {
-        id: 'fb-mozaik-community-2',
-        name: 'Mozaik Community - Advanced Configuration Tips',
-        url: 'https://www.facebook.com/groups/mozaikcommunity/posts/example2',
-        source: ContentSource.FACEBOOK,
-        content_type: 'social_post',
-        description: 'Advanced configuration tips from experienced users',
-        relevance_score: 0.87,
-        last_verified: new Date().toISOString(),
-        tags: ['advanced', 'configuration', 'tips', 'expert']
-      },
-      // Documentation sources
-      {
-        id: 'docs-mozaik-official',
-        name: 'Mozaik Official Documentation',
-        url: 'https://docs.mozaik.com',
-        source: ContentSource.MOZAIK_DOCS,
-        content_type: 'documentation',
-        description: 'Official Mozaik documentation and guides',
+        description: 'Official Mozaik Software YouTube channel with tutorials and updates',
         relevance_score: 0.98,
         last_verified: new Date().toISOString(),
-        tags: ['official', 'documentation', 'reference', 'authoritative']
+        tags: ['official', 'mozaik', 'tutorials', 'updates']
+      },
+      {
+        id: 'yt-cabforge-systems',
+        name: 'CabForge Systems',
+        url: 'https://www.youtube.com/@cabforgesystems',
+        source: ContentSource.YOUTUBE,
+        content_type: 'video_transcript',
+        description: 'CabForge Systems Mozaik tutorials and tips',
+        relevance_score: 0.95,
+        last_verified: new Date().toISOString(),
+        tags: ['cabforge', 'tutorials', 'tips', 'mozaik']
+      },
+      {
+        id: 'yt-cadmate',
+        name: 'CADMate Training',
+        url: 'https://www.youtube.com/@cadmate',
+        source: ContentSource.YOUTUBE,
+        content_type: 'video_transcript',
+        description: 'CADMate training videos for Mozaik users',
+        relevance_score: 0.96,
+        last_verified: new Date().toISOString(),
+        tags: ['cadmate', 'training', 'mozaik', 'education']
+      },
+      {
+        id: 'yt-cabinet-podcast',
+        name: 'The Cabinet Podcast',
+        url: 'https://www.youtube.com/@thecabinetpodcast',
+        source: ContentSource.YOUTUBE,
+        content_type: 'video_transcript',
+        description: 'Cabinet making discussions and Mozaik insights',
+        relevance_score: 0.90,
+        last_verified: new Date().toISOString(),
+        tags: ['podcast', 'cabinet-making', 'discussions', 'insights']
+      },
+      {
+        id: 'yt-woodworking-life',
+        name: 'My Woodworking Life',
+        url: 'https://www.youtube.com/@mywoodworkinglife',
+        source: ContentSource.YOUTUBE,
+        content_type: 'video_transcript',
+        description: 'Woodworking tutorials and Mozaik tips',
+        relevance_score: 0.88,
+        last_verified: new Date().toISOString(),
+        tags: ['woodworking', 'tutorials', 'tips', 'mozaik']
+      },
+      {
+        id: 'yt-retrotech-cnc',
+        name: 'Retrotech CNC',
+        url: 'https://www.youtube.com/@RetrotechCNC',
+        source: ContentSource.YOUTUBE,
+        content_type: 'video_transcript',
+        description: 'CNC operations and Mozaik integration',
+        relevance_score: 0.92,
+        last_verified: new Date().toISOString(),
+        tags: ['cnc', 'operations', 'integration', 'mozaik']
+      },
+      {
+        id: 'yt-phill-anton',
+        name: 'Phill Anton Consulting',
+        url: 'https://www.youtube.com/@PhillAntonConsulting',
+        source: ContentSource.YOUTUBE,
+        content_type: 'video_transcript',
+        description: 'Professional consulting and Mozaik optimization',
+        relevance_score: 0.94,
+        last_verified: new Date().toISOString(),
+        tags: ['consulting', 'optimization', 'professional', 'mozaik']
+      },
+      {
+        id: 'yt-virtucadd',
+        name: 'VirtuCADD',
+        url: 'https://www.youtube.com/@virtucadd',
+        source: ContentSource.YOUTUBE,
+        content_type: 'video_transcript',
+        description: 'CAD solutions and Mozaik workflows',
+        relevance_score: 0.91,
+        last_verified: new Date().toISOString(),
+        tags: ['cad', 'workflows', 'solutions', 'mozaik']
+      },
+      {
+        id: 'yt-finish-carpenters',
+        name: 'Finish Carpenters Co',
+        url: 'https://www.youtube.com/@finishcarpentersco',
+        source: ContentSource.YOUTUBE,
+        content_type: 'video_transcript',
+        description: 'Finish carpentry and Mozaik applications',
+        relevance_score: 0.89,
+        last_verified: new Date().toISOString(),
+        tags: ['finish-carpentry', 'applications', 'mozaik']
+      },
+      {
+        id: 'yt-waukee-cabinet',
+        name: 'Waukee Cabinet Works',
+        url: 'https://www.youtube.com/@waukeecabinetworks5690',
+        source: ContentSource.YOUTUBE,
+        content_type: 'video_transcript',
+        description: 'Cabinet works and Mozaik projects',
+        relevance_score: 0.87,
+        last_verified: new Date().toISOString(),
+        tags: ['cabinet-works', 'projects', 'mozaik']
+      },
+      {
+        id: 'yt-mk-cnc',
+        name: 'MK CNC',
+        url: 'https://www.youtube.com/@mkCNC',
+        source: ContentSource.YOUTUBE,
+        content_type: 'video_transcript',
+        description: 'CNC operations and Mozaik integration',
+        relevance_score: 0.93,
+        last_verified: new Date().toISOString(),
+        tags: ['cnc', 'operations', 'integration', 'mozaik']
+      },
+      {
+        id: 'yt-jesse-raber',
+        name: 'Jesse Raber',
+        url: 'https://www.youtube.com/@Jesse_Raber',
+        source: ContentSource.YOUTUBE,
+        content_type: 'video_transcript',
+        description: 'Jesse Raber\'s Mozaik tutorials and insights',
+        relevance_score: 0.90,
+        last_verified: new Date().toISOString(),
+        tags: ['tutorials', 'insights', 'mozaik', 'jesse-raber']
+      },
+      {
+        id: 'yt-kbrogger',
+        name: 'KBrogger',
+        url: 'https://www.youtube.com/@KBrogger',
+        source: ContentSource.YOUTUBE,
+        content_type: 'video_transcript',
+        description: 'KBrogger\'s Mozaik content and tutorials',
+        relevance_score: 0.89,
+        last_verified: new Date().toISOString(),
+        tags: ['tutorials', 'content', 'mozaik', 'kbrogger']
+      },
+      // Facebook - Mozaik community group
+      {
+        id: 'fb-mozaik-community',
+        name: 'Mozaik Facebook Community Group',
+        url: 'https://www.facebook.com/groups/mozaikcommunity',
+        source: ContentSource.FACEBOOK,
+        content_type: 'social_post',
+        description: 'Mozaik community Facebook group discussions and Q&A',
+        relevance_score: 0.95,
+        last_verified: new Date().toISOString(),
+        tags: ['community', 'discussions', 'q&a', 'mozaik', 'facebook']
       }
     ];
     
@@ -183,7 +270,7 @@ export class KnowledgeScraperService {
         'tutorial', 'guide', 'documentation', 'error', 'solution'
       ],
       scraping_interval_hours: 24,
-      enabled: scrapingAvailable && process.env.KNOWLEDGE_SCRAPING_ENABLED === 'true'
+      enabled: true // Enable scraping by default
     };
     
     if (!scrapingAvailable) {
