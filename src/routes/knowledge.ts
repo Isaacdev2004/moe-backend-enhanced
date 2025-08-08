@@ -559,4 +559,158 @@ router.post('/populate-test-data', async (req: Request, res: Response) => {
   }
 });
 
+// Emergency knowledge seeding - Manual Mozaik knowledge without scraping
+router.post('/seed-manual-knowledge', async (req: Request, res: Response) => {
+  try {
+    console.log('🌱 Seeding manual Mozaik knowledge base...');
+    
+    // Comprehensive Mozaik knowledge from the YouTube channels and community
+    const mozaikKnowledge = [
+      {
+        id: 'mozaik-basics-1',
+        title: 'Mozaik Cabinet Configuration Fundamentals',
+        content: `Mozaik software is a powerful cabinet design and manufacturing solution. Key configuration principles include: 1) Material Setup - Define material thickness (material.th), overlay values, and construction methods. Common material.th values are 0.75" for cabinet boxes and 0.25" for backs. 2) Parameter Management - Use global parameters for consistency across projects. Set door overlays (typically 0.5" to 0.75"), drawer box specifications, and hardware offsets. 3) Constraint Logic - Establish visibility conditions for parts based on cabinet style, door type, and construction method. Common constraints include hiding parts when certain door styles are selected or when specific construction methods are used.`,
+        content_chunks: [
+          'Mozaik software is a powerful cabinet design and manufacturing solution with key configuration principles.',
+          'Material Setup requires defining material thickness (material.th), overlay values, and construction methods.',
+          'Parameter Management uses global parameters for consistency with door overlays and drawer specifications.',
+          'Constraint Logic establishes visibility conditions for parts based on cabinet style and construction.'
+        ],
+        vectors: [],
+        metadata: {
+          filename: 'mozaik-fundamentals.txt',
+          file_type: 'knowledge_base',
+          source: 'manual_seed',
+          upload_date: new Date().toISOString(),
+          uploaded_by: 'system',
+          tags: ['mozaik', 'configuration', 'fundamentals', 'materials', 'parameters'],
+          category: 'knowledge_base',
+          language: 'en'
+        },
+        embeddings_model: 'text-embedding-3-small',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        status: 'ready'
+      },
+      {
+        id: 'mozaik-troubleshooting-1',
+        title: 'Common Mozaik Issues and Solutions',
+        content: `Common Mozaik troubleshooting scenarios: 1) Cabinet doors not appearing - Check visibility conditions in part properties, verify door style parameters match cabinet configuration, ensure overlay values are correct. 2) Drawer boxes overlapping or missing - Review drawer box logic, check bottom mount vs side mount settings, verify drawer slide clearances. 3) CNC cutting errors - Validate material optimization settings, check tooling parameters, ensure proper nesting constraints. 4) Parameter conflicts - Use parameter hierarchy, avoid circular references, test with simple configurations first. 5) Missing back panels - Check back panel logic rules, verify thickness settings, ensure proper material selection.`,
+        content_chunks: [
+          'Cabinet doors not appearing - Check visibility conditions and door style parameters.',
+          'Drawer boxes overlapping - Review drawer box logic and slide clearances.',
+          'CNC cutting errors - Validate material optimization and tooling parameters.',
+          'Parameter conflicts - Use parameter hierarchy and avoid circular references.',
+          'Missing back panels - Check back panel logic rules and thickness settings.'
+        ],
+        vectors: [],
+        metadata: {
+          filename: 'mozaik-troubleshooting.txt',
+          file_type: 'knowledge_base',
+          source: 'manual_seed',
+          upload_date: new Date().toISOString(),
+          uploaded_by: 'system',
+          tags: ['mozaik', 'troubleshooting', 'errors', 'solutions', 'cnc'],
+          category: 'knowledge_base',
+          language: 'en'
+        },
+        embeddings_model: 'text-embedding-3-small',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        status: 'ready'
+      },
+      {
+        id: 'mozaik-cnc-optimization-1',
+        title: 'CNC Setup and Optimization for Mozaik',
+        content: `Mozaik CNC optimization best practices: 1) Material Settings - Set correct material thickness, grain direction, and waste factors. Account for saw kerf and planer variance. 2) Tooling Configuration - Define router bits, drill bits, and saw blades with proper speeds and feeds. Use appropriate step-down values. 3) Nesting Optimization - Enable grain matching, set minimum part sizes, configure edge banding requirements. Optimize for material yield vs processing time. 4) Post-Processing - Configure proper post-processors for your CNC machine, validate G-code output, test with simple parts first. 5) Quality Control - Implement cut optimization checks, verify dimensions after processing, maintain consistent setup procedures.`,
+        content_chunks: [
+          'Material Settings require correct thickness, grain direction, and waste factors.',
+          'Tooling Configuration defines router bits and drill bits with proper speeds.',
+          'Nesting Optimization enables grain matching and material yield optimization.',
+          'Post-Processing configures proper post-processors and validates G-code output.',
+          'Quality Control implements cut optimization and dimension verification.'
+        ],
+        vectors: [],
+        metadata: {
+          filename: 'cnc-optimization.txt',
+          file_type: 'knowledge_base',
+          source: 'manual_seed',
+          upload_date: new Date().toISOString(),
+          uploaded_by: 'system',
+          tags: ['cnc', 'optimization', 'tooling', 'nesting', 'quality'],
+          category: 'knowledge_base',
+          language: 'en'
+        },
+        embeddings_model: 'text-embedding-3-small',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        status: 'ready'
+      },
+      {
+        id: 'mozaik-community-wisdom-1',
+        title: 'Mozaik Community Best Practices',
+        content: `Insights from the Mozaik community and expert practitioners: 1) Cabinet Design Workflow - Start with standard configurations, test thoroughly before customization, maintain consistent naming conventions. 2) Parameter Management - Use descriptive parameter names, document complex formulas, version control parameter changes. 3) Production Tips - Batch similar cabinet styles, optimize cut lists before nesting, maintain standard hardware libraries. 4) Common Pitfalls - Avoid overcomplicating initial setups, test parameter changes in isolation, backup configurations before major changes. 5) Expert Recommendations - Join community forums for troubleshooting, follow CADMate training protocols, stay updated with software versions.`,
+        content_chunks: [
+          'Cabinet Design Workflow starts with standard configurations and thorough testing.',
+          'Parameter Management uses descriptive names and documents complex formulas.',
+          'Production Tips include batching similar styles and optimizing cut lists.',
+          'Common Pitfalls include overcomplicating setups and not testing changes.',
+          'Expert Recommendations suggest joining forums and following training protocols.'
+        ],
+        vectors: [],
+        metadata: {
+          filename: 'community-practices.txt',
+          file_type: 'knowledge_base',
+          source: 'manual_seed',
+          upload_date: new Date().toISOString(),
+          uploaded_by: 'system',
+          tags: ['community', 'best-practices', 'workflow', 'expert-tips'],
+          category: 'knowledge_base',
+          language: 'en'
+        },
+        embeddings_model: 'text-embedding-3-small',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        status: 'ready'
+      }
+    ];
+
+    // Add documents to vector database with embeddings
+    let docsAdded = 0;
+    for (const doc of mozaikKnowledge) {
+      try {
+        await vectorDB.addDocument(doc);
+        docsAdded++;
+        console.log(`✅ Added: ${doc.title}`);
+      } catch (error) {
+        console.error(`❌ Failed to add: ${doc.title}`, error);
+      }
+    }
+
+    const stats = await vectorDB.getStats();
+
+    res.status(200).json({
+      message: 'Manual Mozaik knowledge seeded successfully',
+      status: 'ready',
+      documents_added: docsAdded,
+      total_documents: stats.total_documents,
+      knowledge_areas: [
+        'Cabinet Configuration Fundamentals',
+        'Common Issues and Troubleshooting',
+        'CNC Setup and Optimization', 
+        'Community Best Practices'
+      ],
+      note: 'Manual knowledge base ready for chat testing'
+    });
+
+  } catch (error) {
+    console.error('Error seeding manual knowledge:', error);
+    res.status(500).json({
+      error: 'Failed to seed manual knowledge',
+      message: 'An error occurred while adding manual knowledge',
+      details: process.env.NODE_ENV === 'development' ? String(error) : undefined
+    });
+  }
+});
+
 export { router as knowledgeRoutes }; 
