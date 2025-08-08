@@ -16,15 +16,8 @@ let isInitialized = false;
 /**
  * Initialize knowledge base (run once on startup)
  */
-router.post('/initialize', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/initialize', async (req: Request, res: Response) => {
   try {
-    if (isInitialized) {
-      return res.status(400).json({
-        error: 'Knowledge base already initialized',
-        message: 'Use /refresh endpoint to update existing knowledge'
-      });
-    }
-
     console.log('🚀 Initializing knowledge base...');
     await contentIngestion.initialize();
     isInitialized = true;

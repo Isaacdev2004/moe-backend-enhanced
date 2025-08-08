@@ -194,8 +194,15 @@ async function startServer() {
     // Check if knowledge base needs initialization
     const stats = await contentIngestion.getIngestionStats();
     if (stats.total_documents === 0) {
-      console.log('📚 No existing knowledge found. Knowledge base will be initialized on first request.');
-      console.log('💡 Use POST /api/knowledge/initialize to populate the knowledge base.');
+      console.log('📚 No existing knowledge found. Starting automatic knowledge base initialization...');
+      try {
+        // Auto-initialize the knowledge base with curated sources
+        await contentIngestion.initialize();
+        console.log('✅ Knowledge base initialized successfully with curated sources');
+      } catch (error) {
+        console.error('⚠️ Knowledge base auto-initialization failed:', error);
+        console.log('💡 Use POST /api/knowledge/initialize to manually populate the knowledge base.');
+      }
     } else {
       console.log(`✅ Knowledge base ready with ${stats.total_documents} documents`);
       // Start the ingestion service for scheduled updates
