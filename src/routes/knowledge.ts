@@ -138,59 +138,11 @@ router.post('/refresh', authenticateToken, async (req: AuthenticatedRequest, res
 });
 
 /**
- * Scrape content from specific source
+ * Scraping is disabled - endpoint removed for stability
+ * Use manual knowledge seeding endpoints instead:
+ * - POST /api/knowledge/populate-test-data
+ * - POST /api/knowledge/seed-manual-knowledge
  */
-router.post('/scrape', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const { sources, force_update } = req.body;
-
-    if (!sources || !Array.isArray(sources)) {
-      return res.status(400).json({
-        error: 'Invalid sources',
-        message: 'Please provide an array of sources to scrape'
-      });
-    }
-
-    console.log(`🕷️ Manual scraping requested for sources: ${sources.join(', ')}`);
-
-    // Update scraping config temporarily
-    const originalConfig = knowledgeScraper.getScrapingConfig();
-    knowledgeScraper.updateScrapingConfig({
-      sources: sources,
-      enabled: true
-    });
-
-    try {
-      const result = await knowledgeScraper.scrapeAndIngestKnowledge();
-      
-      res.status(200).json({
-        message: 'Scraping completed successfully',
-        scraping_result: {
-          total_scraped: result.total_scraped,
-          by_source: result.by_source,
-          processing_time: result.processing_time,
-          errors: result.errors
-        },
-        next_steps: [
-          'New content has been added to the knowledge base',
-          'Enhanced context is now available for queries',
-          'Test the improved responses in chat'
-        ]
-      });
-
-    } finally {
-      // Restore original config
-      knowledgeScraper.updateScrapingConfig(originalConfig);
-    }
-
-  } catch (error) {
-    console.error('Manual scraping error:', error);
-    res.status(500).json({
-      error: 'Manual scraping failed',
-      message: 'An error occurred during content scraping'
-    });
-  }
-});
 
 /**
  * Get knowledge base configuration
