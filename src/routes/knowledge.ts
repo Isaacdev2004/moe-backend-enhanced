@@ -509,7 +509,7 @@ router.post('/populate-test-data', async (req: Request, res: Response) => {
         embeddings_model: 'text-embedding-3-small',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        status: 'ready'
+        status: 'ready' as const
       },
       {
         id: 'test-doc-2',
@@ -530,7 +530,7 @@ router.post('/populate-test-data', async (req: Request, res: Response) => {
         embeddings_model: 'text-embedding-3-small',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        status: 'ready'
+        status: 'ready' as const
       }
     ];
 
@@ -590,7 +590,7 @@ router.post('/seed-manual-knowledge', async (req: Request, res: Response) => {
         embeddings_model: 'text-embedding-3-small',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        status: 'ready'
+        status: 'ready' as const
       },
       {
         id: 'mozaik-troubleshooting-1',
@@ -617,7 +617,7 @@ router.post('/seed-manual-knowledge', async (req: Request, res: Response) => {
         embeddings_model: 'text-embedding-3-small',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        status: 'ready'
+        status: 'ready' as const
       },
       {
         id: 'mozaik-cnc-optimization-1',
@@ -644,7 +644,7 @@ router.post('/seed-manual-knowledge', async (req: Request, res: Response) => {
         embeddings_model: 'text-embedding-3-small',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        status: 'ready'
+        status: 'ready' as const
       },
       {
         id: 'mozaik-community-wisdom-1',
@@ -671,7 +671,7 @@ router.post('/seed-manual-knowledge', async (req: Request, res: Response) => {
         embeddings_model: 'text-embedding-3-small',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        status: 'ready'
+        status: 'ready' as const
       }
     ];
 
