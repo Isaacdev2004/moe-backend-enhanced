@@ -499,7 +499,7 @@ router.post('/populate-test-data', async (req: Request, res: Response) => {
         metadata: {
           filename: 'test-knowledge.txt',
           file_type: 'knowledge_base',
-          source: 'manual',
+          file_size: 1024,
           upload_date: new Date().toISOString(),
           uploaded_by: 'system',
           tags: ['mozaik', 'configuration', 'best-practices'],
@@ -520,7 +520,7 @@ router.post('/populate-test-data', async (req: Request, res: Response) => {
         metadata: {
           filename: 'troubleshooting-guide.txt',
           file_type: 'knowledge_base',
-          source: 'manual',
+          file_size: 1536,
           upload_date: new Date().toISOString(),
           uploaded_by: 'system',
           tags: ['mozaik', 'troubleshooting', 'errors', 'solutions'],
@@ -580,7 +580,7 @@ router.post('/seed-manual-knowledge', async (req: Request, res: Response) => {
         metadata: {
           filename: 'mozaik-fundamentals.txt',
           file_type: 'knowledge_base',
-          source: 'manual_seed',
+          file_size: 2048,
           upload_date: new Date().toISOString(),
           uploaded_by: 'system',
           tags: ['mozaik', 'configuration', 'fundamentals', 'materials', 'parameters'],
@@ -607,7 +607,7 @@ router.post('/seed-manual-knowledge', async (req: Request, res: Response) => {
         metadata: {
           filename: 'mozaik-troubleshooting.txt',
           file_type: 'knowledge_base',
-          source: 'manual_seed',
+          file_size: 2560,
           upload_date: new Date().toISOString(),
           uploaded_by: 'system',
           tags: ['mozaik', 'troubleshooting', 'errors', 'solutions', 'cnc'],
@@ -634,7 +634,7 @@ router.post('/seed-manual-knowledge', async (req: Request, res: Response) => {
         metadata: {
           filename: 'cnc-optimization.txt',
           file_type: 'knowledge_base',
-          source: 'manual_seed',
+          file_size: 3072,
           upload_date: new Date().toISOString(),
           uploaded_by: 'system',
           tags: ['cnc', 'optimization', 'tooling', 'nesting', 'quality'],
@@ -661,7 +661,7 @@ router.post('/seed-manual-knowledge', async (req: Request, res: Response) => {
         metadata: {
           filename: 'community-practices.txt',
           file_type: 'knowledge_base',
-          source: 'manual_seed',
+          file_size: 2304,
           upload_date: new Date().toISOString(),
           uploaded_by: 'system',
           tags: ['community', 'best-practices', 'workflow', 'expert-tips'],
