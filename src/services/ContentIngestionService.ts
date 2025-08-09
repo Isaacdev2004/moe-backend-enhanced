@@ -2,7 +2,7 @@ import { KnowledgeScraperService, ScrapedContent } from './KnowledgeScraperServi
 import { VectorDBService } from './VectorDBService.js';
 import { EmbeddingService } from './EmbeddingService.js';
 import { TextChunkingService } from './TextChunkingService.js';
-// Cron jobs disabled - scraping removed
+import cron from 'node-cron';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface KnowledgeDocument {
@@ -85,8 +85,13 @@ export class ContentIngestionService {
     const errors: string[] = [];
 
     try {
-      // Step 1: Skip scraping (disabled for stability)
-      console.log('📋 Phase 1: Scraping disabled - using manual knowledge only...');
+      // Step 1: Scrape content from all sources
+      console.log('🕷️ Phase 1: Scraping content from external sources...');
+      const scrapingResult = await this.knowledgeScraper.scrapeAndIngestKnowledge();
+      
+      if (scrapingResult.errors.length > 0) {
+        errors.push(...scrapingResult.errors);
+      }
 
       // Step 2: Add curated Mozaik knowledge
       console.log('📖 Phase 2: Adding curated Mozaik knowledge...');

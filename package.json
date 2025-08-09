@@ -28,7 +28,15 @@
     "mongoose": "^8.0.3",
     "openai": "^4.24.0",
     "@pinecone-database/pinecone": "^1.1.2",
-    "axios": "^1.6.2"
+    "cheerio": "^1.0.0-rc.12",
+    "axios": "^1.6.2",
+    "node-cron": "^3.0.3",
+    "rss-parser": "^3.13.0"
+  },
+  "optionalDependencies": {
+    "puppeteer-core": "^21.6.1",
+    "youtube-transcript": "^1.0.6",
+    "pdf-parse": "^1.1.1"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

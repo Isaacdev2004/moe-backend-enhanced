@@ -187,18 +187,26 @@ async function startServer() {
     await dbService.connect();
     console.log('✅ Database connected successfully');
 
-    // Initialize knowledge base system (manual mode only)
-    console.log('🧠 Knowledge base system ready (manual seeding mode)');
+    // Initialize knowledge base system
+    console.log('🧠 Initializing knowledge base system...');
     const contentIngestion = new ContentIngestionService();
     
-    // Check knowledge base status
+    // Check if knowledge base needs initialization
     const stats = await contentIngestion.getIngestionStats();
     if (stats.total_documents === 0) {
-      console.log('📚 Knowledge base is empty. Use manual seeding endpoints:');
-      console.log('💡 POST /api/knowledge/populate-test-data (basic)');
-      console.log('💡 POST /api/knowledge/seed-manual-knowledge (comprehensive)');
+      console.log('📚 No existing knowledge found. Starting automatic knowledge base initialization...');
+      try {
+        // Auto-initialize the knowledge base with curated sources
+        await contentIngestion.initialize();
+        console.log('✅ Knowledge base initialized successfully with curated sources');
+      } catch (error) {
+        console.error('⚠️ Knowledge base auto-initialization failed:', error);
+        console.log('💡 Use POST /api/knowledge/initialize to manually populate the knowledge base.');
+      }
     } else {
       console.log(`✅ Knowledge base ready with ${stats.total_documents} documents`);
+      // Start the ingestion service for scheduled updates
+      await contentIngestion.initialize();
     }
 
     app.listen(PORT, () => {
