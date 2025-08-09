@@ -1,0 +1,12 @@
+{
+  "name": "moe-deployment-test",
+  "version": "1.0.0",
+  "description": "Test script for Moe backend deployment",
+  "main": "test-deployment.js",
+  "scripts": {
+    "test": "node test-deployment.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.2"
+  }
+} 
