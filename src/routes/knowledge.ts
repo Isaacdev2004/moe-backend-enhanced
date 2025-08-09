@@ -56,7 +56,7 @@ router.get('/status', authenticateToken, async (req: AuthenticatedRequest, res: 
   try {
     const stats = await contentIngestion.getIngestionStats();
     const scrapingConfig = knowledgeScraper.getScrapingConfig();
-    const scrapingStats = await knowledgeScraper.getScrapingStats();
+    const scrapingStats = knowledgeScraper.getScrapingStatus();
 
     res.status(200).json({
       message: 'Knowledge base status retrieved successfully',
@@ -71,7 +71,7 @@ router.get('/status', authenticateToken, async (req: AuthenticatedRequest, res: 
         enabled: scrapingConfig.enabled,
         sources: scrapingConfig.sources,
         max_content_per_source: scrapingConfig.max_content_per_source,
-        relevance_keywords: scrapingConfig.relevance_keywords
+        min_content_length: scrapingConfig.min_content_length
       },
       scraping_stats: scrapingStats,
       knowledge_quality: {
