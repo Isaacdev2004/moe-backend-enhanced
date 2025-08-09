@@ -531,4 +531,86 @@ router.get('/capabilities', authenticateToken, async (req: AuthenticatedRequest,
   }
 });
 
+// Simple chat endpoint for testing - bypasses complex RAG
+router.post('/simple', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { message } = req.body;
+    
+    if (!message || typeof message !== 'string') {
+      return res.status(400).json({
+        error: 'Invalid message',
+        message: 'Message is required and must be a string'
+      });
+    }
+
+    // Check if OpenAI API key exists
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({
+        error: 'OpenAI API key not configured',
+        message: 'OpenAI API key is missing from environment variables'
+      });
+    }
+
+    // Simple OpenAI call without RAG complexity
+    const OpenAI = (await import('openai')).default;
+    const openai = new OpenAI({ apiKey });
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4-turbo-preview',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are Moe, a helpful AI assistant specialized in Mozaik software. Provide concise, helpful responses.'
+        },
+        {
+          role: 'user', 
+          content: message
+        }
+      ],
+      max_tokens: 500,
+      temperature: 0.7
+    });
+
+    const response = completion.choices[0]?.message?.content || 'No response generated';
+
+    res.status(200).json({
+      message: 'Simple chat response generated successfully',
+      response: {
+        content: response,
+        model: completion.model,
+        tokens_used: completion.usage?.total_tokens || 0
+      },
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Simple chat error:', error);
+    
+    // Detailed error reporting
+    let errorMessage = 'Unknown error occurred';
+    let errorType = 'unknown';
+    
+    if (error.message?.includes('API key')) {
+      errorType = 'api_key';
+      errorMessage = 'OpenAI API key is invalid or missing';
+    } else if (error.message?.includes('quota')) {
+      errorType = 'quota';
+      errorMessage = 'OpenAI API quota exceeded';
+    } else if (error.message?.includes('network') || error.code === 'ENOTFOUND') {
+      errorType = 'network';
+      errorMessage = 'Network connection to OpenAI failed';
+    } else {
+      errorMessage = error.message || 'OpenAI API call failed';
+    }
+
+    res.status(500).json({
+      error: 'Simple chat failed',
+      error_type: errorType,
+      message: errorMessage,
+      details: String(error)
+    });
+  }
+});
+
 export { router as chatRoutes }; 
