@@ -557,7 +557,7 @@ router.post('/simple', authenticateToken, async (req: AuthenticatedRequest, res:
     const openai = new OpenAI({ apiKey });
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4-turbo-preview',
+      model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',

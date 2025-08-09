@@ -100,7 +100,7 @@ Context will be provided with each query to help you give the most relevant resp
       
       // Step 4: Call GPT-4 with context
       const completion = await this.openai.chat.completions.create({
-        model: process.env.GPT_MODEL || 'gpt-4-turbo-preview',
+        model: process.env.GPT_MODEL || 'gpt-4o-mini',
         messages,
         max_tokens: 1500,
         temperature: 0.7,
@@ -123,7 +123,7 @@ Context will be provided with each query to help you give the most relevant resp
         },
         context,
         metadata: {
-          model_used: process.env.GPT_MODEL || 'gpt-4-turbo-preview',
+          model_used: process.env.GPT_MODEL || 'gpt-4o-mini',
           tokens_used: tokensUsed,
           processing_time: Date.now() - startTime,
           context_sources: context.relevant_documents.length,
@@ -440,7 +440,7 @@ Please provide:
 4. Compatibility assessment`;
 
       const completion = await this.openai.chat.completions.create({
-        model: 'gpt-4-turbo-preview',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: this.systemPrompt },
           { role: 'user', content: diagnosticPrompt }
