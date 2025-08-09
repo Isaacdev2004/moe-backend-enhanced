@@ -1,0 +1,493 @@
+{
+  "info": {
+    "name": "Moe Backend - FINAL Complete API Collection",
+    "description": "Complete API collection for Moe AI Assistant - All endpoints tested and working",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "moe-backend-final-2025"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://moe-backend-enhanced-1.onrender.com",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🏠 Server Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Root Endpoint",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🔐 Authentication",
+      "item": [
+        {
+          "name": "User Signup",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.token) {",
+                  "        pm.collectionVariables.set('auth_token', response.token);",
+                  "        console.log('Token saved:', response.token);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"testuser@mozaik.com\",\n  \"password\": \"TestPass123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/signup",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "signup"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "User Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.token) {",
+                  "        pm.collectionVariables.set('auth_token', response.token);",
+                  "        console.log('Token saved:', response.token);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"testuser@mozaik.com\",\n  \"password\": \"TestPass123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "💬 Chat Assistant (WORKING)",
+      "item": [
+        {
+          "name": "Simple Chat (Direct OpenAI)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Hello Moe! How can you help with Mozaik?\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/chat/simple",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chat", "simple"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Enhanced Chat (RAG Pipeline)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"What are common cabinet parameter issues?\",\n  \"session_id\": \"test-session-001\",\n  \"context_preference\": \"comprehensive\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/chat/enhanced-message",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chat", "enhanced-message"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Regular Chat (With Knowledge)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Help me debug a cabinet file\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/chat/message",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chat", "message"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Chat Capabilities",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/chat/capabilities",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chat", "capabilities"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📁 File Upload & Analysis",
+      "item": [
+        {
+          "name": "Upload General File",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/upload/single",
+              "host": ["{{base_url}}"],
+              "path": ["api", "upload", "single"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Specialized File (.cab, .moz, .dat)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/specialized/upload",
+              "host": ["{{base_url}}"],
+              "path": ["api", "specialized", "upload"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Analyze Uploaded File",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"document_id\": \"your-document-id-here\",\n  \"analysis_type\": \"diagnostic\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/chat/analyze-file",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chat", "analyze-file"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🧠 Knowledge Base",
+      "item": [
+        {
+          "name": "Knowledge Base Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/knowledge/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "knowledge", "status"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Initialize Knowledge Base",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"force_refresh\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/knowledge/initialize",
+              "host": ["{{base_url}}"],
+              "path": ["api", "knowledge", "initialize"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Knowledge Insights",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/knowledge/insights",
+              "host": ["{{base_url}}"],
+              "path": ["api", "knowledge", "insights"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🔍 Search & Documents",
+      "item": [
+        {
+          "name": "Semantic Search",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"cabinet parameter constraints\",\n  \"limit\": 5,\n  \"threshold\": 0.7\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/search/semantic",
+              "host": ["{{base_url}}"],
+              "path": ["api", "search", "semantic"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List All Documents",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/search/documents",
+              "host": ["{{base_url}}"],
+              "path": ["api", "search", "documents"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/search/history",
+              "host": ["{{base_url}}"],
+              "path": ["api", "search", "history"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📊 Analytics & Monitoring",
+      "item": [
+        {
+          "name": "System Analytics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/analytics/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["api", "analytics", "dashboard"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Usage Trends",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/analytics/trends",
+              "host": ["{{base_url}}"],
+              "path": ["api", "analytics", "trends"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+} 

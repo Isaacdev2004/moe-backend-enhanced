@@ -33,11 +33,11 @@ const upload = multer({
   storage: storage,
   fileFilter: (req: any, file: any, cb: any) => {
     const allowedTypes = ['.moz', '.dat', '.des', '.xml'];
-    const fileExtension = path.extname(file.originalname).toLowerCase();
-    
+  const fileExtension = path.extname(file.originalname).toLowerCase();
+
     if (allowedTypes.includes(fileExtension)) {
-      cb(null, true);
-    } else {
+    cb(null, true);
+  } else {
       cb(new Error(`File type ${fileExtension} not supported. Allowed types: ${allowedTypes.join(', ')}`));
     }
   },
@@ -151,7 +151,7 @@ router.post('/upload', authenticateToken, upload.single('file'), async (req: any
     }
     
     console.error('Specialized upload error:', error);
-    res.status(500).json({
+    res.status(500).json({ 
       error: 'Failed to process specialized file',
       message: 'An error occurred while processing the specialized file',
       details: process.env.NODE_ENV === 'development' ? String(error) : undefined
@@ -161,13 +161,13 @@ router.post('/upload', authenticateToken, upload.single('file'), async (req: any
 
 // Get supported file types
 router.get('/supported-types', (req: Request, res: Response) => {
-  const supportedTypes = [
-    {
-      type: 'xml',
-      extensions: ['.xml'],
-      description: 'XML files with parts, parameters, and constraints'
-    },
-    {
+    const supportedTypes = [
+      {
+        type: 'xml',
+        extensions: ['.xml'],
+        description: 'XML files with parts, parameters, and constraints'
+      },
+      {
       type: 'moz',
       extensions: ['.moz'],
       description: 'Mozaik project files with components and settings'
@@ -181,13 +181,13 @@ router.get('/supported-types', (req: Request, res: Response) => {
       type: 'des',
       extensions: ['.des'],
       description: 'Mozaik design files with layout and configuration'
-    }
-  ];
+      }
+    ];
 
-  res.json({
-    message: 'Supported file types retrieved successfully',
-    supported_types: supportedTypes
-  });
+    res.json({
+      message: 'Supported file types retrieved successfully',
+      supported_types: supportedTypes
+    });
 });
 
 // Test endpoint
@@ -211,35 +211,35 @@ function extractParts(content: string, fileType: string): any[] {
   
   try {
     // Extract parts based on file type
-    if (fileType === 'xml') {
+  if (fileType === 'xml') {
       const partMatches = content.match(/<part[^>]*>[\s\S]*?<\/part>/gi);
-      if (partMatches) {
-        partMatches.forEach((match, index) => {
+    if (partMatches) {
+      partMatches.forEach((match, index) => {
           const nameMatch = match.match(/name=["']([^"']+)["']/i);
           const typeMatch = match.match(/type=["']([^"']+)["']/i);
           
-          parts.push({
+        parts.push({
             id: `part_${index}`,
             name: nameMatch ? nameMatch[1] : `Part ${index + 1}`,
             type: typeMatch ? typeMatch[1] : 'unknown',
             content: match.trim()
-          });
         });
-      }
-    } else if (fileType === 'moz') {
+      });
+    }
+  } else if (fileType === 'moz') {
       const partMatches = content.match(/component[^}]*{[\s\S]*?}/gi);
       if (partMatches) {
         partMatches.forEach((match, index) => {
           const nameMatch = match.match(/name\s*:\s*["']([^"']+)["']/i);
           
-          parts.push({
+        parts.push({
             id: `component_${index}`,
             name: nameMatch ? nameMatch[1] : `Component ${index + 1}`,
             type: 'component',
             content: match.trim()
-          });
         });
-      }
+      });
+    }
     }
   } catch (error) {
     console.error('Error extracting parts:', error);
@@ -253,18 +253,18 @@ function extractParameters(content: string, fileType: string): any[] {
   
   try {
     // Extract parameters based on file type
-    if (fileType === 'xml') {
+  if (fileType === 'xml') {
       const paramMatches = content.match(/<parameter[^>]*>[\s\S]*?<\/parameter>/gi);
-      if (paramMatches) {
-        paramMatches.forEach((match, index) => {
+    if (paramMatches) {
+      paramMatches.forEach((match, index) => {
           const nameMatch = match.match(/name=["']([^"']+)["']/i);
           const valueMatch = match.match(/value=["']([^"']+)["']/i);
           const typeMatch = match.match(/type=["']([^"']+)["']/i);
           
-          parameters.push({
-            id: `param_${index}`,
+        parameters.push({
+          id: `param_${index}`,
             name: nameMatch ? nameMatch[1] : `Parameter ${index + 1}`,
-            value: valueMatch ? valueMatch[1] : '',
+          value: valueMatch ? valueMatch[1] : '',
             type: typeMatch ? typeMatch[1] : 'string',
             content: match.trim()
           });
@@ -299,15 +299,15 @@ function extractConstraints(content: string, fileType: string): any[] {
   
   try {
     // Extract constraints based on file type
-    if (fileType === 'xml') {
+  if (fileType === 'xml') {
       const constraintMatches = content.match(/<constraint[^>]*>[\s\S]*?<\/constraint>/gi);
-      if (constraintMatches) {
-        constraintMatches.forEach((match, index) => {
+    if (constraintMatches) {
+      constraintMatches.forEach((match, index) => {
           const typeMatch = match.match(/type=["']([^"']+)["']/i);
           const valueMatch = match.match(/value=["']([^"']+)["']/i);
           
-          constraints.push({
-            id: `constraint_${index}`,
+        constraints.push({
+          id: `constraint_${index}`,
             type: typeMatch ? typeMatch[1] : 'unknown',
             value: valueMatch ? valueMatch[1] : '',
             content: match.trim()
@@ -320,8 +320,8 @@ function extractConstraints(content: string, fileType: string): any[] {
         constraintMatches.forEach((match, index) => {
           const typeMatch = match.match(/type\s*:\s*["']([^"']+)["']/i);
           
-          constraints.push({
-            id: `constraint_${index}`,
+        constraints.push({
+          id: `constraint_${index}`,
             type: typeMatch ? typeMatch[1] : 'unknown',
             value: '',
             content: match.trim()
@@ -340,7 +340,7 @@ function detectBrokenLogic(parts: any[], parameters: any[], constraints: any[]):
   const issues: any[] = [];
   
   try {
-    // Check for missing required parameters
+  // Check for missing required parameters
     const requiredParams = parameters.filter(p => p.type === 'required');
     if (requiredParams.length === 0 && parts.length > 0) {
       issues.push({
