@@ -184,7 +184,8 @@ router.post('/message', authenticateToken, validateChatMessage, async (req: Auth
     console.error('Chat message error:', error);
     res.status(500).json({
       error: 'Chat processing failed',
-      message: 'An error occurred while processing your message'
+      message: 'An error occurred while processing your message',
+      details: process.env.NODE_ENV === 'development' ? String(error) : 'Check server logs for details'
     });
   }
 });
