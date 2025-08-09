@@ -1,0 +1,470 @@
+{
+  "info": {
+    "name": "Moe Backend - Final API Collection",
+    "description": "Complete working API collection for Moe AI Assistant Backend - All endpoints tested and verified",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "3.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://moe-backend-enhanced-1.onrender.com",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🏠 Core Endpoints",
+      "item": [
+        {
+          "name": "Root - Welcome",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            }
+          }
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔐 Authentication",
+      "item": [
+        {
+          "name": "Sign Up",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (responseCode.code === 201) {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.environment.set('jwt_token', jsonData.token);",
+                  "    pm.collectionVariables.set('jwt_token', jsonData.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"client.test@mozaik.com\",\n  \"password\": \"SecurePass123\",\n  \"name\": \"Client Test User\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/signup",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "signup"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (responseCode.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.environment.set('jwt_token', jsonData.token);",
+                  "    pm.collectionVariables.set('jwt_token', jsonData.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"client.test@mozaik.com\",\n  \"password\": \"SecurePass123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "💬 Chat & AI",
+      "item": [
+        {
+          "name": "Simple Chat (Recommended)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Hello Moe! Can you help me with Mozaik software?\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/chat/simple",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chat", "simple"]
+            }
+          }
+        },
+        {
+          "name": "Full RAG Chat",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"How do I fix cabinet parameter issues in Mozaik?\",\n  \"session_id\": \"test-session-123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/chat/message",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chat", "message"]
+            }
+          }
+        },
+        {
+          "name": "Enhanced Chat with Context",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Analyze my uploaded cabinet file for errors\",\n  \"session_id\": \"enhanced-session-456\",\n  \"include_knowledge_base\": true,\n  \"include_user_files\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/chat/enhanced-message",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chat", "enhanced-message"]
+            }
+          }
+        },
+        {
+          "name": "Get Chat Capabilities",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/chat/capabilities",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chat", "capabilities"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📁 File Upload & Processing",
+      "item": [
+        {
+          "name": "Upload General File",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/upload/single",
+              "host": ["{{base_url}}"],
+              "path": ["api", "upload", "single"]
+            }
+          }
+        },
+        {
+          "name": "Upload Specialized Mozaik File",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/specialized/upload",
+              "host": ["{{base_url}}"],
+              "path": ["api", "specialized", "upload"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔍 Search & Documents",
+      "item": [
+        {
+          "name": "Semantic Search",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"cabinet parameters\",\n  \"limit\": 5,\n  \"threshold\": 0.7\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/search/semantic",
+              "host": ["{{base_url}}"],
+              "path": ["api", "search", "semantic"]
+            }
+          }
+        },
+        {
+          "name": "List Documents",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/search/documents",
+              "host": ["{{base_url}}"],
+              "path": ["api", "search", "documents"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🧠 Knowledge Base",
+      "item": [
+        {
+          "name": "Knowledge Base Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/knowledge/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "knowledge", "status"]
+            }
+          }
+        },
+        {
+          "name": "Initialize Knowledge Base",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/knowledge/initialize",
+              "host": ["{{base_url}}"],
+              "path": ["api", "knowledge", "initialize"]
+            }
+          }
+        },
+        {
+          "name": "Get Curated Sources",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/knowledge/curated-sources",
+              "host": ["{{base_url}}"],
+              "path": ["api", "knowledge", "curated-sources"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📊 Analytics",
+      "item": [
+        {
+          "name": "Analytics Dashboard",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analytics/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["api", "analytics", "dashboard"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+} 
