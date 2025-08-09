@@ -1,3 +1,6 @@
+// Moe Backend - Enhanced AI Assistant for Mozaik Software
+// Last updated: 2025-08-09 - Model fix deployed
+
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
