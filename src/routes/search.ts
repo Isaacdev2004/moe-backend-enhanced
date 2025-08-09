@@ -133,52 +133,92 @@ router.post('/specialized', authenticateToken, validateSearch, async (req: Authe
   }
 });
 
-// Get user documents with filtering
-router.get('/documents', authenticateToken, validateDocumentFilters, async (req: AuthenticatedRequest, res: Response) => {
+// List user documents - Updated to include knowledge base
+router.get('/documents', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        error: 'Validation failed',
-        errors: errors.array()
-      });
-    }
-
+    const { type, category, tags, limit = 50, include_knowledge = 'true' } = req.query;
     const userId = req.user!.userId;
-    const { file_types, categories, tags, start_date, end_date } = req.query;
 
-    // Build filters
-    const filters: any = {};
-    if (file_types) {
-      filters.file_types = Array.isArray(file_types) ? file_types : [file_types];
-    }
-    if (categories) {
-      filters.categories = Array.isArray(categories) ? categories : [categories];
-    }
-    if (tags) {
-      filters.tags = Array.isArray(tags) ? tags : [tags];
-    }
-    if (start_date || end_date) {
-      filters.date_range = {};
-      if (start_date) filters.date_range.start = start_date as string;
-      if (end_date) filters.date_range.end = end_date as string;
+    console.log(`📋 Listing documents for user ${userId}`);
+
+    const filters: SearchFilters = {};
+    if (type) filters.file_types = [type as string];
+    if (category) filters.categories = [category as string];
+    if (tags) filters.tags = (tags as string).split(',');
+
+    // Get user's personal documents
+    const userDocs = await vectorDB.listDocuments(userId, filters);
+    
+    // Get knowledge base documents if requested
+    let knowledgeDocs: any[] = [];
+    if (include_knowledge === 'true') {
+      try {
+        // Query knowledge base documents directly from the database
+        const DocumentModel = (await import('../models/Document.js')).DocumentModel;
+        const kbDocs = await DocumentModel.find({
+          $or: [
+            { 'metadata.uploaded_by': 'content_ingestion' },
+            { 'metadata.uploaded_by': 'scraper' },
+            { 'metadata.file_type': 'scraped_content' },
+            { 'metadata.file_type': 'knowledge_base' }
+          ]
+        }).limit(25).lean();
+
+        knowledgeDocs = kbDocs.map(doc => ({
+          id: doc.id,
+          title: doc.title,
+          content_preview: doc.content?.substring(0, 200) + '...',
+          metadata: {
+            ...doc.metadata,
+            source_type: 'knowledge_base',
+            is_knowledge: true
+          },
+          created_at: doc.created_at,
+          status: doc.status
+        }));
+      } catch (error) {
+        console.warn('Could not fetch knowledge base documents:', error);
+      }
     }
 
-    const documents = await vectorDB.listDocuments(userId, filters);
+    const totalUserDocs = userDocs.length;
+    const totalKnowledgeDocs = knowledgeDocs.length;
 
     res.status(200).json({
       message: 'Documents retrieved successfully',
-      documents,
-      metadata: {
-        total_documents: documents.length,
-        filters_applied: Object.keys(filters).length > 0 ? filters : 'none'
-      }
+      documents: {
+        user_documents: userDocs.map(doc => ({
+          id: doc.id,
+          title: doc.title,
+          content_preview: doc.content?.substring(0, 200) + '...',
+          metadata: {
+            ...doc.metadata,
+            source_type: 'user_upload',
+            is_knowledge: false
+          },
+          created_at: doc.created_at,
+          updated_at: doc.updated_at,
+          status: doc.status
+        })),
+        knowledge_base: knowledgeDocs
+      },
+      pagination: {
+        total_user_documents: totalUserDocs,
+        total_knowledge_documents: totalKnowledgeDocs,
+        total_documents: totalUserDocs + totalKnowledgeDocs,
+        limit: parseInt(limit as string),
+        showing_user: totalUserDocs,
+        showing_knowledge: totalKnowledgeDocs
+      },
+      filters_applied: filters,
+      knowledge_included: include_knowledge === 'true'
     });
+
   } catch (error) {
-    console.error('Get documents error:', error);
+    console.error('Error listing documents:', error);
     res.status(500).json({
       error: 'Failed to retrieve documents',
-      message: 'An error occurred while retrieving documents'
+      message: 'An error occurred while fetching documents'
     });
   }
 });

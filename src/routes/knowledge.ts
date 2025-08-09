@@ -713,4 +713,123 @@ router.post('/seed-manual-knowledge', async (req: Request, res: Response) => {
   }
 });
 
+// Get detailed source tracking and verification
+router.get('/sources-detail', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    console.log('📊 Getting detailed source tracking...');
+
+    // Get all knowledge base documents with source details
+    const DocumentModel = (await import('../models/Document.js')).DocumentModel;
+    
+    const knowledgeDocs = await DocumentModel.find({
+      $or: [
+        { 'metadata.uploaded_by': 'content_ingestion' },
+        { 'metadata.uploaded_by': 'scraper' },
+        { 'metadata.file_type': 'scraped_content' },
+        { 'metadata.file_type': 'knowledge_base' }
+      ]
+    }).select('id title content metadata knowledge_metadata created_at').lean();
+
+    // Group by source type
+    const sourceBreakdown = {
+      youtube_channels: [],
+      facebook_groups: [],
+      manual_knowledge: [],
+      other_sources: []
+    };
+
+    const sourceStats = {
+      total_documents: knowledgeDocs.length,
+      youtube_count: 0,
+      facebook_count: 0,
+      manual_count: 0,
+      other_count: 0,
+      total_content_length: 0
+    };
+
+    knowledgeDocs.forEach(doc => {
+      const sourceDetails = doc.knowledge_metadata?.source_details || doc.metadata;
+      const contentLength = doc.content?.length || 0;
+      sourceStats.total_content_length += contentLength;
+
+      const docInfo = {
+        id: doc.id,
+        title: doc.title,
+        content_preview: doc.content?.substring(0, 300) + '...',
+        content_length: contentLength,
+        source_platform: sourceDetails.platform || sourceDetails.file_type,
+        source_url: sourceDetails.url,
+        author: sourceDetails.author,
+        scraped_date: sourceDetails.scraped_date || doc.created_at,
+        tags: doc.metadata.tags || [],
+        category: doc.metadata.category
+      };
+
+      // Categorize by source
+      if (sourceDetails.platform === 'youtube' || (sourceDetails.url && sourceDetails.url.includes('youtube'))) {
+        sourceBreakdown.youtube_channels.push(docInfo);
+        sourceStats.youtube_count++;
+      } else if (sourceDetails.platform === 'facebook' || (sourceDetails.url && sourceDetails.url.includes('facebook'))) {
+        sourceBreakdown.facebook_groups.push(docInfo);
+        sourceStats.facebook_count++;
+      } else if (sourceDetails.file_type === 'knowledge_base' || doc.metadata.uploaded_by === 'content_ingestion') {
+        sourceBreakdown.manual_knowledge.push(docInfo);
+        sourceStats.manual_count++;
+      } else {
+        sourceBreakdown.other_sources.push(docInfo);
+        sourceStats.other_count++;
+      }
+    });
+
+    // Get the configured curated sources
+    const knowledgeScraper = new (await import('../services/KnowledgeScraperService.js')).KnowledgeScraperService();
+    const curatedSources = knowledgeScraper.getCuratedSources();
+
+    res.status(200).json({
+      message: 'Source tracking retrieved successfully',
+      source_verification: {
+        configured_sources: {
+          youtube_channels: curatedSources.filter(s => s.source === 'youtube').map(s => ({
+            channel_name: s.name,
+            channel_url: s.url,
+            status: 'configured'
+          })),
+          facebook_groups: curatedSources.filter(s => s.source === 'facebook').map(s => ({
+            group_name: s.name,
+            group_url: s.url,
+            status: 'configured'
+          })),
+          total_configured: curatedSources.length
+        },
+        scraped_content: sourceBreakdown,
+        statistics: sourceStats,
+        content_analysis: {
+          average_document_length: Math.round(sourceStats.total_content_length / sourceStats.total_documents),
+          total_knowledge_size: `${Math.round(sourceStats.total_content_length / 1024)} KB`,
+          source_distribution: {
+            youtube_percentage: Math.round((sourceStats.youtube_count / sourceStats.total_documents) * 100),
+            facebook_percentage: Math.round((sourceStats.facebook_count / sourceStats.total_documents) * 100),
+            manual_percentage: Math.round((sourceStats.manual_count / sourceStats.total_documents) * 100),
+            other_percentage: Math.round((sourceStats.other_count / sourceStats.total_documents) * 100)
+          }
+        }
+      },
+      recommendations: [
+        sourceStats.youtube_count === 0 ? 'No YouTube content found - check scraping configuration' : null,
+        sourceStats.facebook_count === 0 ? 'No Facebook content found - check scraping configuration' : null,
+        sourceStats.total_documents < 10 ? 'Low document count - consider running knowledge base initialization' : null
+      ].filter(Boolean),
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Error getting source details:', error);
+    res.status(500).json({
+      error: 'Failed to retrieve source tracking',
+      message: 'An error occurred while getting detailed source information',
+      details: process.env.NODE_ENV === 'development' ? String(error) : undefined
+    });
+  }
+});
+
 export { router as knowledgeRoutes }; 
