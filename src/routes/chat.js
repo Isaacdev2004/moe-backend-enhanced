@@ -1,6 +1,6 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
-import { authenticateToken, AuthenticatedRequest } from './auth.js';
+import { authenticateToken } from './auth.js';
 import { enforceCaps } from '../middleware/usage.js';
 import { PLANS } from '../config/plans.js';
 import AnswerCache from '../models/AnswerCache.js';
@@ -23,7 +23,7 @@ const validateChatMessage = [
 ];
 
 // Enhanced chat endpoint with caching and usage tracking
-router.post('/message', authenticateToken, validateChatMessage, enforceCaps, async (req: AuthenticatedRequest, res) => {
+router.post('/message', authenticateToken, validateChatMessage, enforceCaps, async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -34,7 +34,7 @@ router.post('/message', authenticateToken, validateChatMessage, enforceCaps, asy
     }
 
     const { message: question, platform, version, session_id } = req.body;
-    const userId = req.user!.userId;
+    const userId = req.user?.userId;
     const model = req.modelToUse;
     const planFeatures = req.planFeatures;
     const userPlan = req.userPlan;
@@ -155,10 +155,10 @@ router.post('/message', authenticateToken, validateChatMessage, enforceCaps, asy
 });
 
 // Simple chat endpoint (for testing)
-router.post('/simple', authenticateToken, enforceCaps, async (req: AuthenticatedRequest, res) => {
+router.post('/simple', authenticateToken, enforceCaps, async (req, res) => {
   try {
     const { message } = req.body;
-    const userId = req.user!.userId;
+    const userId = req.user?.userId;
     const model = req.modelToUse;
     const userPlan = req.userPlan;
 
@@ -170,9 +170,6 @@ router.post('/simple', authenticateToken, enforceCaps, async (req: Authenticated
     }
 
     console.log(`💬 Simple chat from user ${userId} (${userPlan}): "${message}"`);
-
-    const OpenAI = (await import('openai')).default;
-    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
     const completion = await openai.chat.completions.create({
       model,
@@ -232,7 +229,7 @@ router.post('/simple', authenticateToken, enforceCaps, async (req: Authenticated
 });
 
 // Get chat capabilities
-router.get('/capabilities', authenticateToken, async (req: AuthenticatedRequest, res) => {
+router.get('/capabilities', authenticateToken, async (req, res) => {
   try {
     const userPlan = req.user?.plan || 'free';
     const plan = PLANS[userPlan];
@@ -269,4 +266,4 @@ router.get('/capabilities', authenticateToken, async (req: AuthenticatedRequest,
   }
 });
 
-export { router as chatRoutes }; 
+export default router; 

@@ -1,6 +1,6 @@
 import express from 'express';
 import { body, param, validationResult } from 'express-validator';
-import { authenticateToken, AuthenticatedRequest } from './auth.js';
+import { authenticateToken } from './auth.js';
 import AnswerCache from '../models/AnswerCache.js';
 import Vote from '../models/Vote.js';
 
@@ -15,7 +15,7 @@ const validateVote = [
 ];
 
 // Vote on an answer
-router.post('/:answer_id/vote', authenticateToken, validateVote, async (req: AuthenticatedRequest, res) => {
+router.post('/:answer_id/vote', authenticateToken, validateVote, async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -25,7 +25,7 @@ router.post('/:answer_id/vote', authenticateToken, validateVote, async (req: Aut
       });
     }
 
-    const user_id = req.user!.userId;
+    const user_id = req.user?.userId;
     const { answer_id } = req.params;
     const { vote, reason = null, notes = null } = req.body;
 
@@ -156,9 +156,9 @@ router.get('/:answer_id/stats', async (req, res) => {
 });
 
 // Get user's vote on an answer
-router.get('/:answer_id/my-vote', authenticateToken, async (req: AuthenticatedRequest, res) => {
+router.get('/:answer_id/my-vote', authenticateToken, async (req, res) => {
   try {
-    const user_id = req.user!.userId;
+    const user_id = req.user?.userId;
     const { answer_id } = req.params;
 
     const vote = await Vote.findOne({ user_id, answer_id });
@@ -231,4 +231,4 @@ router.get('/top/:platform?', async (req, res) => {
   }
 });
 
-export { router as voteRoutes }; 
+export default router; 
